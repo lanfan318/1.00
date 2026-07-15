@@ -1,0 +1,21 @@
+# Maven build output
+target/
+!.mvn/wrapper/maven-wrapper.properties
+
+# IDE
+.idea/
+*.iml
+*.iws
+.classpath
+.project
+.settings/
+
+# Logs
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local config (sensitive)
+application-local.yml

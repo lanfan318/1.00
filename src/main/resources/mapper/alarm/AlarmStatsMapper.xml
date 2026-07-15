@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hollysys.ppa.module.alarm.stats.mapper.AlarmStatsMapper">
+
+    <select id="countTotal" resultType="java.lang.Long">
+        SELECT COUNT(1) FROM t_alarm_history
+        WHERE deleted = 0 AND occur_time BETWEEN #{start} AND #{end}
+    </select>
+
+    <select id="countUnconfirmed" resultType="java.lang.Long">
+        SELECT COUNT(1) FROM t_alarm_realtime
+        WHERE deleted = 0 AND confirmed = 0 AND suppressed = 0
+    </select>
+
+    <select id="countSuppressed" resultType="java.lang.Long">
+        SELECT COUNT(1) FROM t_alarm_realtime
+        WHERE deleted = 0 AND suppressed = 1
+    </select>
+
+    <select id="avgHandleMinutes" resultType="java.lang.Double">
+        SELECT COALESCE(AVG(TIMESTAMPDIFF(SECOND, occur_time, recover_time)) / 60.0, 0)
+        FROM t_alarm_history
+        WHERE deleted = 0 AND recover_time IS NOT NULL
+          AND occur_time BETWEEN #{start} AND #{end}
+    </select>
+
+    <select id="specialtyPie" resultType="com.hollysys.ppa.module.alarm.stats.vo.AlarmStatsPieVO">
+        SELECT COALESCE(sp.specialty_name, '未知') AS name,
+               COUNT(1) AS count,
+               ROUND(COUNT(1) * 100.0 / SUM(COUNT(1)) OVER(), 2) AS percentage
+        FROM t_alarm_history h
+        LEFT JOIN dim_specialty sp ON h.specialty_id = sp.id AND sp.deleted = 0
+        WHERE h.deleted = 0 AND h.occur_time BETWEEN #{start} AND #{end}
+        GROUP BY sp.specialty_name
+        ORDER BY count DESC
+    </select>
+
+    <select id="levelPie" resultType="com.hollysys.ppa.module.alarm.stats.vo.AlarmStatsPieVO">
+        SELECT CASE h.alarm_level
+                 WHEN 1 THEN '一级'
+                 WHEN 2 THEN '二级'
+                 WHEN 3 THEN '智能预警'
+                 ELSE '未知' END AS name,
+               COUNT(1) AS count,
+               ROUND(COUNT(1) * 100.0 / SUM(COUNT(1)) OVER(), 2) AS percentage
+        FROM t_alarm_history h
+        WHERE h.deleted = 0 AND h.occur_time BETWEEN #{start} AND #{end}
+        GROUP BY h.alarm_level
+        ORDER BY h.alarm_level
+    </select>
+
+    <select id="typePie" resultType="com.hollysys.ppa.module.alarm.stats.vo.AlarmStatsPieVO">
+        SELECT CASE h.alarm_type
+                 WHEN 1 THEN '预测预警'
+                 WHEN 2 THEN '故障预警'
+                 WHEN 3 THEN '阈值预警'
+                 WHEN 4 THEN '视频预警'
+                 WHEN 5 THEN '速率预警'
+                 ELSE '未知' END AS name,
+               COUNT(1) AS count,
+               ROUND(COUNT(1) * 100.0 / SUM(COUNT(1)) OVER(), 2) AS percentage
+        FROM t_alarm_history h
+        WHERE h.deleted = 0 AND h.occur_time BETWEEN #{start} AND #{end}
+        GROUP BY h.alarm_type
+        ORDER BY count DESC
+    </select>
+
+    <select id="topFrequency" resultType="com.hollysys.ppa.module.alarm.stats.vo.AlarmStatsRankVO">
+        SELECT h.alarm_title AS alarmTitle,
+               h.alarm_type AS alarmType,
+               COALESCE(sp.specialty_name, '未知') AS specialtyName,
+               COUNT(1) AS frequency,
+               COALESCE(AVG(h.duration_seconds), 0) AS avgDurationSeconds
+        FROM t_alarm_history h
+        LEFT JOIN dim_specialty sp ON h.specialty_id = sp.id AND sp.deleted = 0
+        WHERE h.deleted = 0 AND h.occur_time BETWEEN #{start} AND #{end}
+        GROUP BY h.alarm_title, h.alarm_type, sp.specialty_name
+        ORDER BY frequency DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="topDuration" resultType="com.hollysys.ppa.module.alarm.stats.vo.AlarmStatsRankVO">
+        SELECT h.alarm_title AS alarmTitle,
+               h.alarm_type AS alarmType,
+               COALESCE(sp.specialty_name, '未知') AS specialtyName,
+               COUNT(1) AS frequency,
+               COALESCE(SUM(h.duration_seconds), 0) AS totalDurationSeconds
+        FROM t_alarm_history h
+        LEFT JOIN dim_specialty sp ON h.specialty_id = sp.id AND sp.deleted = 0
+        WHERE h.deleted = 0 AND h.occur_time BETWEEN #{start} AND #{end}
+        GROUP BY h.alarm_title, h.alarm_type, sp.specialty_name
+        ORDER BY totalDurationSeconds DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="dailyTrend" resultType="com.hollysys.ppa.module.alarm.stats.vo.AlarmStatsTrendVO">
+        SELECT DATE_FORMAT(occur_time, '%Y-%m-%d') AS date,
+               SUM(CASE WHEN alarm_level = 1 THEN 1 ELSE 0 END) AS level1Count,
+               SUM(CASE WHEN alarm_level = 2 THEN 1 ELSE 0 END) AS level2Count,
+               SUM(CASE WHEN alarm_level = 3 THEN 1 ELSE 0 END) AS level3Count,
+               COUNT(1) AS totalCount
+        FROM t_alarm_history
+        WHERE deleted = 0 AND occur_time BETWEEN #{start} AND #{end}
+        GROUP BY DATE_FORMAT(occur_time, '%Y-%m-%d')
+        ORDER BY date
+    </select>
+
+</mapper>
