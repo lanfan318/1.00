@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hollysys.ppa.module.alarm.realtime.mapper.AlarmRealtimeMapper">
+
+    <!-- 分页查询实时报警（关联维度表取名称） -->
+    <select id="selectPageWithNames" resultType="com.hollysys.ppa.module.alarm.realtime.vo.AlarmRealtimeVO">
+        SELECT
+            a.id, a.alarm_code, a.alarm_title, a.alarm_type, a.alarm_level,
+            u.unit_name,
+            sp.specialty_name,
+            sy.system_name,
+            mp.point_name AS measure_point_name,
+            a.current_value, a.threshold_value, a.occur_time,
+            a.confirmed, a.confirm_by, a.confirm_time,
+            a.suppressed, a.classify_level
+        FROM t_alarm_realtime a
+        LEFT JOIN dim_unit u ON a.unit_id = u.id AND u.deleted = 0
+        LEFT JOIN dim_specialty sp ON a.specialty_id = sp.id AND sp.deleted = 0
+        LEFT JOIN dim_system sy ON a.system_id = sy.id AND sy.deleted = 0
+        LEFT JOIN dim_measure_point mp ON a.measure_point_id = mp.id AND mp.deleted = 0
+        WHERE a.deleted = 0
+        <if test="query.alarmLevel != null">
+            AND a.alarm_level = #{query.alarmLevel}
+        </if>
+        <if test="query.alarmType != null">
+            AND a.alarm_type = #{query.alarmType}
+        </if>
+        <if test="query.unitId != null">
+            AND a.unit_id = #{query.unitId}
+        </if>
+        <if test="query.specialtyId != null">
+            AND a.specialty_id = #{query.specialtyId}
+        </if>
+        <if test="query.confirmed != null">
+            AND a.confirmed = #{query.confirmed}
+        </if>
+        <if test="query.keyword != null and query.keyword != ''">
+            AND (a.alarm_title LIKE CONCAT('%', #{query.keyword}, '%')
+                 OR a.alarm_code LIKE CONCAT('%', #{query.keyword}, '%'))
+        </if>
+        ORDER BY a.occur_time DESC
+    </select>
+
+    <!-- 统计某等级数量 -->
+    <select id="countByLevel" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM t_alarm_realtime
+        WHERE deleted = 0 AND suppressed = 0 AND alarm_level = #{alarmLevel}
+    </select>
+
+    <!-- 查询某等级 Top N 最新报警 -->
+    <select id="selectTopByLevel" resultType="com.hollysys.ppa.module.alarm.realtime.vo.AlarmRealtimeVO">
+        SELECT
+            a.id, a.alarm_code, a.alarm_title, a.alarm_type, a.alarm_level,
+            u.unit_name,
+            sp.specialty_name,
+            sy.system_name,
+            mp.point_name AS measure_point_name,
+            a.current_value, a.threshold_value, a.occur_time,
+            a.confirmed, a.suppressed, a.classify_level
+        FROM t_alarm_realtime a
+        LEFT JOIN dim_unit u ON a.unit_id = u.id AND u.deleted = 0
+        LEFT JOIN dim_specialty sp ON a.specialty_id = sp.id AND sp.deleted = 0
+        LEFT JOIN dim_system sy ON a.system_id = sy.id AND sy.deleted = 0
+        LEFT JOIN dim_measure_point mp ON a.measure_point_id = mp.id AND mp.deleted = 0
+        WHERE a.deleted = 0 AND a.suppressed = 0 AND a.alarm_level = #{alarmLevel}
+        ORDER BY a.occur_time DESC
+        LIMIT #{limit}
+    </select>
+
+</mapper>
