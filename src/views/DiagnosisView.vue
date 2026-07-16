@@ -144,7 +144,8 @@ onUnmounted(() => kc?.dispose())
 .tg-i { background: rgba(59,130,246,0.12); color: #3b82f6; }
 
 /* 两侧固定等高550px */
-.diag-card { height: 550px; overflow-y: auto; }
+.diag-card, .kg-card { height: 550px; overflow: hidden; }
+.diag-card { overflow-y: auto; }
 .kg-card { display: flex; flex-direction: column; }
 .kg-card .cd-t { flex-shrink: 0; }
 .kg-chart { width: 100%; height: 500px; }
