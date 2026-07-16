@@ -6,7 +6,7 @@
       <el-option v-for="d in diagList" :key="d.id" :value="d.id" :label="d.name + '（' + d.dept + '）' + (d.alarm ? ' — ' + d.alarm : '')"/>
     </el-select>
   </div>
-  <el-row :gutter="14">
+  <el-row :gutter="14" align="stretch">
     <el-col :span="12"><div class="cd"><div class="cd-t">智能诊断</div>
       <div style="background:#0a0e17;border-radius:8px;padding:14px;margin-bottom:12px">
         <div style="font-size:11px;color:#94a3b8;margin-bottom:4px">诊断对象</div>
@@ -116,10 +116,10 @@ onUnmounted(() => kc?.dispose())
 .tg-w { background: rgba(245,158,11,0.12); color: #f59e0b; }
 .tg-i { background: rgba(59,130,246,0.12); color: #3b82f6; }
 
-/* 知识图谱：右侧占满主区域 */
-.kg-card { height: calc(100vh - 200px); min-height: 500px; display: flex; flex-direction: column; }
+/* 知识图谱：右侧与左侧等高 */
+.kg-card { display: flex; flex-direction: column; height: 100%; }
 .kg-card .cd-t { flex-shrink: 0; }
-.kg-chart { flex: 1; min-height: 0; }
+.kg-chart { flex: 1; min-height: 500px; }
 
 /* 引用溯源：全宽放在底部 */
 .ref-card { margin-top: 14px; }
