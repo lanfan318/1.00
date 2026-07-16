@@ -38,10 +38,15 @@
         <el-col :span="6"><div class="dt-card"><div class="dt-l">名称</div><div class="dt-v">{{ selected.n }}</div></div></el-col>
         <el-col :span="6"><div class="dt-card"><div class="dt-l">类型</div><div class="dt-v" :style="{color:selected.c}">{{ selectedType }}</div></div></el-col>
         <el-col :span="6"><div class="dt-card"><div class="dt-l">关联关系</div><div class="dt-v">{{ relationsOf(selected.n).length }} 条</div></div></el-col>
-        <el-col :span="6"><div class="dt-card"><div class="dt-l">操作</div><div class="dt-v">
-          <el-button v-if="selected.did" link type="primary" size="small" @click="goDevice">查看设备详情</el-button>
-          <el-button link type="primary" size="small" @click="goAnalysis">查看工况分析</el-button>
-        </div></el-col>
+        <el-col :span="6">
+          <div class="dt-card">
+            <div class="dt-l">操作</div>
+            <div class="dt-v">
+              <el-button v-if="selected.did" link type="primary" size="small" @click="goDevice">查看设备详情</el-button>
+              <el-button link type="primary" size="small" @click="goAnalysis">查看工况分析</el-button>
+            </div>
+          </div>
+        </el-col>
       </el-row>
       <div v-if="relationsOf(selected.n).length" style="margin-top:12px">
         <div class="dt-rels">
