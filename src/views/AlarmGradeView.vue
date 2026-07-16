@@ -1,40 +1,104 @@
 <template>
-<div class="pg"><h2 style="margin-bottom:16px;font-size:16px;font-weight:500">报警分级管理</h2>
-<el-row :gutter="14">
-  <el-col :span="8" v-for="g in grades" :key="g.lv">
-    <div class="gc" :class="'g'+g.lv">
-      <div class="gh"><span class="gl">{{g.lv===1?'一级报警':g.lv===2?'二级报警':'智能预警'}}</span><span class="gn">{{g.t}}条</span></div>
-      <div class="gd">{{g.d}}</div>
-      <div class="gs">
-        <div class="gsi"><div class="gsv" style="color:#22c55e">{{g.h}}</div><div>已处理</div></div>
-        <div class="gsi"><div class="gsv" style="color:#ef4444">{{g.u}}</div><div>未处理</div></div>
-        <div class="gsi"><div class="gsv">{{g.a}}分</div><div>平均响应</div></div>
+<div>
+  <h2 class="pg-t">报警分级管理 · 设备故障映射</h2>
+  <p class="pg-d">系统按严重程度将报警分为三级，每级对应不同的设备故障类型、响应时间和处置规则。</p>
+
+  <div class="g-grid">
+    <div v-for="(g, lv) in store.alarmLevels" :key="lv" class="g-card" :class="'g'+lv">
+      <div class="g-h">
+        <span class="g-lv" :style="{color: g.color}">{{ g.label }}</span>
+        <span class="g-cnt" :style="{background: g.color+'22', color: g.color}">{{ countAlarms(parseInt(lv)) }} 条</span>
       </div>
-      <el-divider />
-      <div class="gr-t">升级规则</div>
-      <div class="gr-v" v-for="r in g.rs" :key="r">· {{r}}</div>
+      <div class="g-d">{{ g.desc }}</div>
+      <div class="g-stat">
+        <div class="g-si"><div class="g-sv" style="color:#22c55e">{{ countHandled(parseInt(lv)) }}</div><div>已处理</div></div>
+        <div class="g-si"><div class="g-sv" style="color:#ef4444">{{ countUnhandled(parseInt(lv)) }}</div><div>未处理</div></div>
+        <div class="g-si"><div class="g-sv">{{ g.avgTime }}分</div><div>平均响应</div></div>
+      </div>
+
+      <div class="g-section">
+        <div class="g-st">📋 适用设备故障</div>
+        <table class="g-tbl">
+          <thead><tr><th>设备</th><th>测点</th><th>常见原因</th></tr></thead>
+          <tbody>
+            <tr v-for="(d, i) in g.deviceFaults" :key="i">
+              <td>{{ d.device }}</td>
+              <td><span class="badge" :style="{background:g.color+'22', color:g.color}">{{ d.point }}</span></td>
+              <td>{{ d.reason }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="g-section">
+        <div class="g-st">⚙️ 升级规则</div>
+        <div v-for="(r, i) in g.rules" :key="i" class="g-r">· {{ r }}</div>
+      </div>
     </div>
-  </el-col>
-</el-row></div>
+  </div>
+
+  <div class="cd" style="margin-top:14px">
+    <div class="cd-t">分级统计（{{ store.selectedUnit.name }}）</div>
+    <el-row :gutter="12">
+      <el-col :span="6"><div class="kpi"><div class="kpi-l">一级响应时长</div><div class="kpi-v" style="color:#ef4444">{{ avgTime(1) }}分</div><div class="kpi-s">应在 1 分钟内</div></div></el-col>
+      <el-col :span="6"><div class="kpi"><div class="kpi-l">二级响应时长</div><div class="kpi-v" style="color:#f59e0b">{{ avgTime(2) }}分</div><div class="kpi-s">应在 2 小时内</div></div></el-col>
+      <el-col :span="6"><div class="kpi"><div class="kpi-l">智能预警响应</div><div class="kpi-v" style="color:#06b6d4">{{ avgTime(3) }}分</div><div class="kpi-s">应在 24 小时内</div></div></el-col>
+      <el-col :span="6"><div class="kpi"><div class="kpi-l">整体闭环率</div><div class="kpi-v" style="color:#22c55e">{{ closeRate }}</div><div class="kpi-s">已处理 / 总数</div></div></el-col>
+    </el-row>
+  </div>
+</div>
 </template>
 
 <script setup>
-const grades = [
-  {lv:1,t:8,h:3,u:5,a:1.2,d:'紧急：可能造成设备损坏或人员安全威胁，需立即处置',rs:['30分钟未处置自动升级至场站负责人','同步推送短信+钉钉+邮件','触发联动控制逻辑']},
-  {lv:2,t:23,h:18,u:5,a:4.5,d:'关注：参数异常但暂无安全风险，需在当班内确认',rs:['2小时未确认自动升级为一级','推送站内消息+短信','生成巡检工单']},
-  {lv:3,t:100,h:90,u:10,a:12,d:'预警：智能预测发现潜在风险趋势，建议关注',rs:['24小时未关闭需交接班处理','仅推送站内消息','纳入趋势分析报告']}
-]
+import { computed } from 'vue'
+import { useDataStore } from '@/stores/data'
+
+const store = useDataStore()
+
+const countAlarms = (lv) => store.unitAlarms(store.selectedUnitId).filter(a => a.l === lv).length
+const countHandled = (lv) => store.unitAlarms(store.selectedUnitId).filter(a => a.l === lv && a.st === 'resolved').length
+const countUnhandled = (lv) => store.unitAlarms(store.selectedUnitId).filter(a => a.l === lv && a.st === 'unhandled').length
+const avgTime = (lv) => {
+  // 模拟：取该等级已处理报警的平均间隔
+  const arr = store.unitAlarms(store.selectedUnitId).filter(a => a.l === lv && a.st === 'resolved')
+  if (arr.length === 0) return store.alarmLevels[lv].avgTime
+  return (Math.random() * 2 + store.alarmLevels[lv].avgTime * 0.5).toFixed(1)
+}
+const closeRate = computed(() => {
+  const arr = store.unitAlarms(store.selectedUnitId)
+  if (arr.length === 0) return '0%'
+  const h = arr.filter(a => a.st === 'resolved').length
+  return ((h / arr.length) * 100).toFixed(0) + '%'
+})
 </script>
 
 <style scoped>
-.pg{background:#111827;padding:20px;border-radius:10px}
-.gc{padding:18px;border-radius:10px;border:0.5px solid #1e293b;background:#0a0e17}
-.g1{border-color:rgba(239,68,68,0.4)}.g2{border-color:rgba(245,158,11,0.4)}.g3{border-color:rgba(6,182,212,0.4)}
-.gh{display:flex;justify-content:space-between;margin-bottom:10px}
-.gl{font-size:16px;font-weight:600}.g1 .gl{color:#ef4444}.g2 .gl{color:#f59e0b}.g3 .gl{color:#06b6d4}
-.gn{font-size:12px;color:#94a3b8}.gd{font-size:12px;color:#94a3b8;line-height:1.6;margin-bottom:16px}
-.gs{display:flex;justify-content:space-around}.gsi{text-align:center}
-.gsv{font-size:22px;font-weight:600}.gsi div:nth-child(2){font-size:11px;color:#94a3b8}
-.gr-t{font-size:12px;font-weight:500;color:#3b82f6;margin-bottom:8px}
-.gr-v{font-size:12px;color:#94a3b8;line-height:1.8}
+.pg-t { font-size: 16px; font-weight: 500; margin-bottom: 6px; }
+.pg-d { color: #94a3b8; font-size: 12px; margin-bottom: 16px; }
+.g-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.g-card { padding: 18px; border-radius: 10px; border: 0.5px solid #1e293b; background: #111827; }
+.g1 { border-color: rgba(239,68,68,0.4); }
+.g2 { border-color: rgba(245,158,11,0.4); }
+.g3 { border-color: rgba(6,182,212,0.4); }
+.g-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.g-lv { font-size: 16px; font-weight: 600; }
+.g-cnt { font-size: 12px; padding: 2px 10px; border-radius: 4px; }
+.g-d { font-size: 12px; color: #94a3b8; line-height: 1.6; margin-bottom: 12px; padding: 8px 10px; background: rgba(0,0,0,0.2); border-radius: 6px; }
+.g-stat { display: flex; justify-content: space-around; padding: 8px 0; margin-bottom: 12px; }
+.g-si { text-align: center; }
+.g-sv { font-size: 22px; font-weight: 600; }
+.g-si div:last-child { font-size: 11px; color: #94a3b8; }
+.g-section { margin-bottom: 12px; }
+.g-st { font-size: 12px; font-weight: 600; color: #94a3b8; margin-bottom: 6px; }
+.g-tbl { width: 100%; border-collapse: collapse; font-size: 11px; }
+.g-tbl th { text-align: left; padding: 4px 6px; color: #64748b; font-weight: 500; border-bottom: 0.5px solid #1e293b; }
+.g-tbl td { padding: 5px 6px; border-bottom: 0.5px solid #1e293b; color: #cbd5e1; }
+.badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; }
+.g-r { font-size: 11px; color: #94a3b8; line-height: 1.8; }
+.cd { background: #111827; border: 0.5px solid #1e293b; border-radius: 10px; padding: 16px; }
+.cd-t { font-size: 13px; color: #94a3b8; margin-bottom: 12px; font-weight: 500; }
+.kpi { background: #0a0e17; padding: 14px; border-radius: 8px; text-align: center; }
+.kpi-l { font-size: 11px; color: #94a3b8; margin-bottom: 6px; }
+.kpi-v { font-size: 26px; font-weight: 600; }
+.kpi-s { font-size: 10px; color: #64748b; margin-top: 4px; }
 </style>
