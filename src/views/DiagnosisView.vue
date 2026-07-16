@@ -116,8 +116,9 @@ onUnmounted(() => kc?.dispose())
 .tg-w { background: rgba(245,158,11,0.12); color: #f59e0b; }
 .tg-i { background: rgba(59,130,246,0.12); color: #3b82f6; }
 
-/* 两列等高 */
-.diag-row { display: flex; align-items: stretch; }
+/* 两列等高（用 grid 强制，避开 el-row 默认样式干扰） */
+.diag-row { display: grid !important; grid-template-columns: 1fr 1fr; gap: 14px; align-items: stretch; }
+.diag-row .el-col { width: auto !important; padding: 0 !important; }
 .diag-col { display: flex; }
 .diag-card { flex: 1; display: flex; flex-direction: column; }
 
