@@ -124,7 +124,7 @@ onUnmounted(() => kc?.dispose())
 /* 知识图谱：右侧与左侧等高 */
 .kg-card { display: flex; flex-direction: column; height: 100%; flex: 1; }
 .kg-card .cd-t { flex-shrink: 0; }
-.kg-chart { flex: 1; min-height: 500px; }
+.kg-chart { flex: 1; min-height: 0; }
 
 /* 引用溯源：全宽放在底部 */
 .ref-card { margin-top: 14px; }
