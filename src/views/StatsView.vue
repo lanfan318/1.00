@@ -59,6 +59,7 @@ const period = ref('today')
 const chProf = ref(null), chLevel = ref(null), chStatus = ref(null), chTop10 = ref(null), chDur = ref(null)
 let charts = []
 
+const stats = computed(() => store.stats)
 const cnt = (l) => store.unitAlarms(store.selectedUnitId).filter(a => a.l === l).length
 const suppressed = computed(() => store.unitAlarms(store.selectedUnitId).filter(a => a.st === 'suppressed').length)
 const filterCnt = computed(() => Math.floor(store.stats.total * 0.05 + Math.random() * 3))

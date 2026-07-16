@@ -21,7 +21,7 @@
       <div class="cd" style="margin-bottom:14px">
         <div class="cd-h"><span class="cd-t">设备信息</span>
           <div>
-            <el-button size="small" type="primary" @click="editing=true" :disabled="!cdev">编辑参数</el-button>
+            <el-button size="small" type="primary" @click="showBatchEdit" :disabled="!cdev">批量修改</el-button>
             <el-button size="small" type="danger" @click="delCurDev" :disabled="!cdev">删除设备</el-button>
           </div>
         </div>
@@ -125,6 +125,9 @@ const triggerAlarm = (row) => {
 }
 
 const showAddUnit = () => { Object.assign(uf, { n: '', type: '火电机组', cap: 600 }); unitDlg.value = true }
+const showBatchEdit = () => {
+  ElMessage.info('请使用下表每行的"应用"按钮单独修改每个测点参数')
+}
 const saveUnit = () => {
   if (!uf.n.trim()) { ElMessage.warning('请输入机组名称'); return }
   store.addUnit({ name: uf.n, type: uf.type, capacity: uf.cap })
