@@ -143,7 +143,8 @@ onUnmounted(() => kc?.dispose())
 .tg-w { background: rgba(245,158,11,0.12); color: #f59e0b; }
 .tg-i { background: rgba(59,130,246,0.12); color: #3b82f6; }
 
-/* 知识图谱：固定高度，简单可靠 */
+/* 两侧固定等高550px */
+.diag-card { height: 550px; overflow-y: auto; }
 .kg-card { display: flex; flex-direction: column; }
 .kg-card .cd-t { flex-shrink: 0; }
 .kg-chart { width: 100%; height: 500px; }
