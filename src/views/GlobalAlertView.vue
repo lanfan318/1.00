@@ -1,8 +1,26 @@
 <template>
 <div class="bs">
   <div class="bs-head">
-    <div class="bs-title">火电运行全域告警监控大屏 · {{ store.selectedUnit.name }}</div>
+    <div class="bs-title">火电运行全域告警监控大屏</div>
     <div class="bs-clock">{{ clock }}</div>
+  </div>
+
+  <!-- 机组选择板块 -->
+  <div class="bs-unit-panel">
+    <span class="bs-up-lbl">⚡ 选择机组：</span>
+    <div class="bs-up-cards">
+      <div v-for="u in store.units" :key="u.id" class="bs-up-card" :class="{on: store.selectedUnitId===u.id}" @click="switchUnit(u.id)">
+        <div class="bs-up-name">{{ u.name }}</div>
+        <div class="bs-up-meta">
+          <span class="bs-up-ty">{{ u.type }} · {{ u.capacity }}MW</span>
+          <span v-if="store.selectedUnitId===u.id" class="bs-up-mark">✓</span>
+        </div>
+        <div class="bs-up-stats">
+          <div class="bs-up-stat"><span>设备</span><strong>{{ store.unitDevices(u.id).length }}</strong></div>
+          <div class="bs-up-stat"><span>报警</span><strong style="color:#ef4444">{{ store.unitAlarms(u.id).length }}</strong></div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <el-row :gutter="12" class="bs-row">
@@ -89,6 +107,11 @@ const router = useRouter()
 const clock = ref('')
 const profRef = ref(null), trendRef = ref(null)
 let pCh, tCh, iv
+
+const switchUnit = (id) => {
+  store.selectedUnitId = id
+  nextTick(() => initCharts())
+}
 
 const unitAlarms = computed(() => store.unitAlarms(store.selectedUnitId))
 const cnt = (l) => unitAlarms.value.filter(a => a.l === l).length
@@ -181,9 +204,25 @@ onUnmounted(() => { clearInterval(iv); pCh?.dispose(); tCh?.dispose() })
 
 <style scoped>
 .bs { min-height: 100vh; padding: 14px; background: linear-gradient(180deg, #050810, #0a0e17); }
-.bs-head { display: flex; justify-content: center; align-items: center; position: relative; padding: 8px 0 16px; }
+.bs-head { display: flex; justify-content: center; align-items: center; position: relative; padding: 8px 0 12px; }
 .bs-title { font-size: 22px; font-weight: 600; background: linear-gradient(90deg, #3b82f6, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 2px; }
 .bs-clock { position: absolute; right: 0; color: #94a3b8; font-family: monospace; }
+
+/* 机组选择板块（紧凑大屏风格） */
+.bs-unit-panel { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; padding: 8px 14px; background: rgba(20,27,45,0.5); border: 0.5px solid rgba(59,130,246,0.25); border-radius: 8px; }
+.bs-up-lbl { font-size: 12px; color: #3b82f6; font-weight: 500; flex-shrink: 0; }
+.bs-up-cards { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; }
+.bs-up-card { display: flex; align-items: center; gap: 12px; padding: 6px 12px; background: #0a0e17; border: 1px solid #1e293b; border-radius: 6px; cursor: pointer; transition: 0.15s; min-width: 180px; position: relative; }
+.bs-up-card:hover { border-color: #3b82f6; transform: translateY(-1px); }
+.bs-up-card.on { border-color: #3b82f6; background: rgba(59,130,246,0.15); box-shadow: 0 0 8px rgba(59,130,246,0.3); }
+.bs-up-name { font-size: 13px; font-weight: 600; color: #e2e8f0; }
+.bs-up-meta { display: flex; flex-direction: column; gap: 2px; }
+.bs-up-ty { font-size: 10px; color: #94a3b8; }
+.bs-up-mark { font-size: 10px; color: #3b82f6; font-weight: 500; }
+.bs-up-stats { display: flex; gap: 10px; padding-left: 10px; border-left: 0.5px solid #1e293b; }
+.bs-up-stat { display: flex; flex-direction: column; align-items: center; min-width: 40px; }
+.bs-up-stat span { font-size: 9px; color: #64748b; line-height: 1; }
+.bs-up-stat strong { font-size: 14px; color: #3b82f6; line-height: 1.2; }
 .bs-row { margin-bottom: 12px; }
 .kpi { background: rgba(20,27,45,0.6); border: 0.5px solid rgba(59,130,246,0.25); border-radius: 8px; padding: 14px; text-align: center; }
 .kpi-l { font-size: 12px; color: #94a3b8; margin-bottom: 6px; }

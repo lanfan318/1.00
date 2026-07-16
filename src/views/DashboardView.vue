@@ -89,8 +89,9 @@
 
   <!-- AI 洞察 -->
   <div class="insight">
-    <div class="in-t">AI 实时运行洞察 · {{ store.selectedUnit.name }}</div>
+    <div class="in-t">AI 实时运行洞察 · {{ store.selectedUnit.name }} <span class="in-tag">实时分析中</span></div>
     <div class="in-b" id="dash-insight">分析中...</div>
+    <div class="in-problems" id="dash-problems"></div>
   </div>
 </div>
 </template>
@@ -177,6 +178,7 @@ const updateInsight = () => {
   const devs = store.unitDevices(store.selectedUnitId)
   const warns = devs.filter(d => d.health < 85)
   const alarms = store.unitAlarms(store.selectedUnitId).filter(a => a.st === 'unhandled')
+  const l1 = alarms.filter(a => a.l === 1)
   let text = ''
   if (warns.length > 0) {
     text += `<span style="color:#f59e0b">设备健康度：</span>${warns.map(d => `${d.name} ${d.health.toFixed(1)}`).join('、')} 偏低需关注。`
@@ -184,13 +186,66 @@ const updateInsight = () => {
     text += `<span style="color:#22c55e">设备健康度：</span>所有设备均在 85 以上，状态良好。`
   }
   if (alarms.length > 0) {
-    text += ` <span style="color:#ef444e">未处理报警：</span>${alarms.length} 条，${alarms.filter(a => a.l === 1).length} 条一级需立即响应。`
+    text += ` <span style="color:#ef4444">未处理报警：</span>${alarms.length} 条，${alarms.filter(a => a.l === 1).length} 条一级需立即响应。`
   } else {
     text += ` <span style="color:#22c55e">报警状态：</span>无未处理。`
   }
   const t = parseFloat(document.getElementById('m-temp').textContent)
   if (t > 545) text += ` <span style="color:#f59e0b">温度预警：</span>主汽温度 ${t}°C 接近上限 545°C，建议调整减温水量。`
   document.getElementById('dash-insight').innerHTML = text
+
+  // 问题设备列表（高亮标出）
+  const problemDiv = document.getElementById('dash-problems')
+  if (problemDiv) {
+    const problems = []
+    warns.forEach(d => {
+      const badParams = Object.entries(d.params || {}).filter(([k, v]) => v[0] >= v[1])
+      problems.push({
+        type: d.health < 70 ? 'danger' : 'warn',
+        icon: d.health < 70 ? '🚨' : '⚠️',
+        name: d.name,
+        dept: d.dept,
+        health: d.health,
+        reason: badParams.length > 0 ? `${badParams[0][0]}=${badParams[0][1][0]}${badParams[0][1][2]}（阈值 ${badParams[0][1][1]}${badParams[0][1][2]}）` : '健康度低于 85，需关注',
+        suggestion: d.health < 70 ? '建议立即安排停机检查' : '建议加强巡检频次',
+        alarmCount: alarms.filter(a => a.device === d.name).length
+      })
+    })
+    l1.forEach(a => {
+      if (!problems.find(p => p.name === a.device)) {
+        problems.push({
+          type: 'danger',
+          icon: '🚨',
+          name: a.device,
+          dept: a.dept,
+          health: store.deviceById(store.devices.find(d => d.name === a.device)?.id)?.health || 0,
+          reason: a.desc,
+          suggestion: '立即响应，按操作指导处置',
+          alarmCount: 1
+        })
+      }
+    })
+
+    if (problems.length === 0) {
+      problemDiv.innerHTML = '<div class="prob-empty">✅ 当前机组所有设备运行良好，暂无问题</div>'
+    } else {
+      problemDiv.innerHTML = '<div class="prob-h">🔴 问题设备 TOP' + problems.length + '</div>' +
+        problems.map(p => `
+          <div class="prob-card ${p.type}">
+            <div class="prob-i">${p.icon}</div>
+            <div class="prob-info">
+              <div class="prob-name">${p.name} <span class="prob-dept">${p.dept}</span> ${p.alarmCount > 0 ? `<span class="prob-alarm">${p.alarmCount} 条报警</span>` : ''}</div>
+              <div class="prob-r">问题：${p.reason}</div>
+              <div class="prob-s">建议：${p.suggestion}</div>
+            </div>
+            <div class="prob-h-val">
+              <div class="prob-hl">${p.health.toFixed(1)}</div>
+              <div class="prob-hll">健康度</div>
+            </div>
+          </div>
+        `).join('')
+    }
+  }
 }
 
 const onUnitChange = () => {
@@ -254,6 +309,25 @@ onUnmounted(() => { clearInterval(iv); c1?.dispose(); c2?.dispose(); c3?.dispose
 .hb-f.ok { background: #22c55e; } .hb-f.wn { background: #f59e0b; } .hb-f.dg { background: #ef4444; }
 .hb-v { width: 36px; text-align: right; font-weight: 500; }
 .insight { background: #0a0e17; border: 0.5px solid #1e293b; border-radius: 10px; padding: 14px; }
-.in-t { font-size: 12px; font-weight: 500; color: #3b82f6; margin-bottom: 6px; }
-.in-b { font-size: 12px; color: #94a3b8; line-height: 1.7; }
+.in-t { font-size: 12px; font-weight: 500; color: #3b82f6; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+.in-tag { font-size: 10px; padding: 1px 6px; border-radius: 3px; background: rgba(34,197,94,0.15); color: #22c55e; font-weight: 400; }
+.in-b { font-size: 12px; color: #94a3b8; line-height: 1.7; margin-bottom: 10px; }
+.in-problems { margin-top: 10px; padding-top: 10px; border-top: 0.5px dashed #1e293b; }
+.prob-h { font-size: 12px; font-weight: 600; color: #ef4444; margin-bottom: 8px; }
+.prob-empty { text-align: center; padding: 20px; color: #22c55e; font-size: 13px; }
+.prob-card { display: flex; gap: 12px; padding: 10px 12px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid; }
+.prob-card.danger { background: rgba(239,68,68,0.08); border-color: #ef4444; }
+.prob-card.warn { background: rgba(245,158,11,0.08); border-color: #f59e0b; }
+.prob-i { font-size: 20px; line-height: 1; flex-shrink: 0; }
+.prob-info { flex: 1; min-width: 0; }
+.prob-name { font-size: 13px; font-weight: 600; color: #e2e8f0; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.prob-dept { font-size: 10px; padding: 1px 6px; border-radius: 3px; background: #1e293b; color: #94a3b8; font-weight: 400; }
+.prob-alarm { font-size: 10px; padding: 1px 6px; border-radius: 3px; background: rgba(239,68,68,0.2); color: #ef4444; font-weight: 500; }
+.prob-r { font-size: 11px; color: #cbd5e1; margin-bottom: 2px; }
+.prob-s { font-size: 11px; color: #94a3b8; }
+.prob-h-val { text-align: center; flex-shrink: 0; min-width: 60px; }
+.prob-hl { font-size: 22px; font-weight: 700; }
+.prob-card.danger .prob-hl { color: #ef4444; }
+.prob-card.warn .prob-hl { color: #f59e0b; }
+.prob-hll { font-size: 10px; color: #64748b; }
 </style>
