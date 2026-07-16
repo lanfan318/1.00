@@ -20,7 +20,7 @@
         <p v-for="(g,i) in cur.guide" :key="i">{{ i+1 }}. {{ g }}</p>
       </div>
     </div></el-col>
-    <el-col :span="12">
+    <el-col :span="12" class="diag-col">
       <div class="cd kg-card"><div class="cd-t">知识图谱推理（拖动节点可调整位置）</div><div ref="kg" class="kg-chart"></div></div>
     </el-col>
   </el-row>
