@@ -20,13 +20,23 @@
         <p v-for="(g,i) in cur.guide" :key="i">{{ i+1 }}. {{ g }}</p>
       </div>
     </div></el-col>
-    <el-col :span="12" class="diag-right">
+    <el-col :span="12">
       <div class="cd kg-card"><div class="cd-t">知识图谱推理（拖动节点可调整位置）</div><div ref="kg" class="kg-chart"></div></div>
-      <div class="cd ref-card"><div class="cd-t">引用溯源</div>
-        <div v-for="(r,i) in cur.refs" :key="i" class="ref"><span class="tg" :class="r.conf>90?'tg-w':'tg-i'">{{ r.id }}</span> <span style="color:#64748b;font-size:11px">{{ r.date }}</span> · {{ r.desc }} · <span style="color:#3b82f6">置信度 {{ r.conf }}</span></div>
-      </div>
     </el-col>
   </el-row>
+
+  <!-- 引用溯源：全宽放底部 -->
+  <div class="cd ref-card">
+    <div class="cd-t">引用溯源</div>
+    <div class="ref-grid">
+      <div v-for="(r,i) in cur.refs" :key="i" class="ref">
+        <span class="tg" :class="r.conf>90?'tg-w':'tg-i'">{{ r.id }}</span>
+        <span style="color:#64748b;font-size:11px;margin-left:6px">{{ r.date }}</span>
+        <div class="ref-desc">{{ r.desc }}</div>
+        <div class="ref-conf">置信度 <strong style="color:#3b82f6">{{ r.conf }}</strong></div>
+      </div>
+    </div>
+  </div>
 </div>
 </template>
 
@@ -105,12 +115,16 @@ onUnmounted(() => kc?.dispose())
 .tg { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
 .tg-w { background: rgba(245,158,11,0.12); color: #f59e0b; }
 .tg-i { background: rgba(59,130,246,0.12); color: #3b82f6; }
-.ref { background: #0a0e17; padding: 10px; border-radius: 8px; margin-bottom: 6px; font-size: 12px; color: #94a3b8; }
 
-/* 右侧：知识图谱占主区域，引用溯源放底部 */
-.diag-right { display: flex; flex-direction: column; min-height: calc(100vh - 130px); }
-.diag-right .kg-card { flex: 1; min-height: 0; display: flex; flex-direction: column; margin-bottom: 14px; }
-.diag-right .kg-card .cd-t { flex-shrink: 0; }
-.kg-chart { flex: 1; min-height: 500px; }
-.diag-right .ref-card { flex-shrink: 0; max-height: 240px; overflow-y: auto; }
+/* 知识图谱：右侧占满主区域 */
+.kg-card { height: calc(100vh - 200px); min-height: 500px; display: flex; flex-direction: column; }
+.kg-card .cd-t { flex-shrink: 0; }
+.kg-chart { flex: 1; min-height: 0; }
+
+/* 引用溯源：全宽放在底部 */
+.ref-card { margin-top: 14px; }
+.ref-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px; }
+.ref { background: #0a0e17; padding: 12px; border-radius: 8px; font-size: 12px; color: #94a3b8; border: 0.5px solid #1e293b; }
+.ref-desc { color: #cbd5e1; margin: 6px 0; line-height: 1.5; }
+.ref-conf { font-size: 11px; color: #94a3b8; }
 </style>
