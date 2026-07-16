@@ -1,9 +1,25 @@
 <template>
 <div>
-  <!-- 机组切换 -->
-  <el-tabs v-model="store.selectedUnitId" class="unit-tabs" @tab-change="onUnitChange">
-    <el-tab-pane v-for="u in store.units" :key="u.id" :label="`${u.name} · ${u.type} · ${u.capacity}MW`" :name="u.id" />
-  </el-tabs>
+  <!-- 机组选择板块（卡片式，可点击切换） -->
+  <div class="unit-panel">
+    <div class="up-header">
+      <div class="up-title">⚡ 机组选择</div>
+      <div class="up-hint">点击切换不同机组查看监控数据</div>
+    </div>
+    <div class="up-cards">
+      <div v-for="u in store.units" :key="u.id" class="up-card" :class="{on: store.selectedUnitId===u.id}" @click="switchUnit(u.id)">
+        <div class="up-c1">
+          <div class="up-name">{{ u.name }}</div>
+          <div class="up-type">{{ u.type }} · {{ u.capacity }}MW</div>
+        </div>
+        <div class="up-c2">
+          <div class="up-metric"><span>设备</span><strong>{{ store.unitDevices(u.id).length }}</strong></div>
+          <div class="up-metric"><span>报警</span><strong style="color:#ef4444">{{ store.unitAlarms(u.id).length }}</strong></div>
+        </div>
+        <div class="up-c3" v-if="store.selectedUnitId===u.id">✓ 当前选中</div>
+      </div>
+    </div>
+  </div>
 
   <!-- 专业切换：锅炉 / 汽轮 / 全部 -->
   <div class="dept-switch">
@@ -174,6 +190,12 @@ const updateInsight = () => {
 const onUnitChange = () => {
   nextTick(() => { initCharts(); updateMetrics() })
 }
+const switchUnit = (id) => {
+  store.selectedUnitId = id
+  // 切换机组时自动重置专业视图为"全部"
+  deptMode.value = 'all'
+  nextTick(() => { initCharts(); updateMetrics() })
+}
 
 watch(() => store.selectedUnitId, onUnitChange)
 onMounted(() => { nextTick(() => { initCharts(); updateMetrics() }) })
@@ -182,10 +204,23 @@ onUnmounted(() => { clearInterval(iv); c1?.dispose(); c2?.dispose(); c3?.dispose
 </script>
 
 <style scoped>
-.unit-tabs { margin-bottom: 12px; }
-:deep(.unit-tabs .el-tabs__nav-wrap::after) { background-color: transparent; }
-:deep(.unit-tabs .el-tabs__item) { color: #94a3b8; font-size: 14px; height: 40px; line-height: 40px; }
-:deep(.unit-tabs .el-tabs__item.is-active) { color: #3b82f6; font-weight: 500; }
+/* 机组选择板块（卡片式） */
+.unit-panel { background: linear-gradient(135deg, rgba(59,130,246,0.05), rgba(99,102,241,0.02)); border: 0.5px solid rgba(59,130,246,0.2); border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; }
+.up-header { display: flex; align-items: center; margin-bottom: 12px; }
+.up-title { font-size: 14px; font-weight: 600; color: #3b82f6; }
+.up-hint { font-size: 11px; color: #64748b; margin-left: 12px; }
+.up-cards { display: flex; gap: 12px; flex-wrap: wrap; }
+.up-card { display: flex; align-items: center; gap: 16px; padding: 14px 18px; background: #0a0e17; border: 1.5px solid #1e293b; border-radius: 10px; cursor: pointer; transition: 0.15s; min-width: 260px; position: relative; }
+.up-card:hover { border-color: #3b82f6; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(59,130,246,0.2); }
+.up-card.on { border-color: #3b82f6; background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(59,130,246,0.05)); box-shadow: 0 0 16px rgba(59,130,246,0.3); }
+.up-c1 { flex: 1; }
+.up-name { font-size: 16px; font-weight: 600; color: #e2e8f0; margin-bottom: 4px; }
+.up-type { font-size: 12px; color: #94a3b8; }
+.up-c2 { display: flex; gap: 16px; padding-left: 16px; border-left: 0.5px solid #1e293b; }
+.up-metric { text-align: center; }
+.up-metric span { display: block; font-size: 10px; color: #64748b; margin-bottom: 2px; }
+.up-metric strong { font-size: 18px; color: #3b82f6; }
+.up-c3 { position: absolute; top: 8px; right: 12px; font-size: 11px; color: #3b82f6; font-weight: 500; }
 .dept-switch { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; padding: 8px 14px; background: #0a0e17; border-radius: 8px; }
 .dept-lbl { font-size: 12px; color: #94a3b8; }
 .dept-hint { font-size: 11px; color: #64748b; margin-left: auto; }

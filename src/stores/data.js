@@ -7,7 +7,9 @@ export const useDataStore = defineStore('data', () => {
   // ============ 机组 ============
   const units = ref([
     { id: 'U1', name: '#1 机组', type: '火电机组', capacity: 600,
-      base: { load: 495, press: 16.72, temp: 541, coal: 298, nox: 42, so2: 18, dust: 5.5 } }
+      base: { load: 495, press: 16.72, temp: 541, coal: 298, nox: 42, so2: 18, dust: 5.5 } },
+    { id: 'U2', name: '#2 机组', type: '火电机组', capacity: 600,
+      base: { load: 480, press: 16.45, temp: 538, coal: 302, nox: 45, so2: 20, dust: 6.2 } }
   ])
 
   const addUnit = (u) => {
@@ -57,7 +59,29 @@ export const useDataStore = defineStore('data', () => {
     { id: 'U1-hp', unit: 'U1', dept: '汽轮机', name: '高压加热器', model: 'GJ-2024', health: 89.5,
       params: { 端差: [4.8, 8, '℃'], 水位: [1.5, 2.0, 'm'] } },
     { id: 'U1-deox', unit: 'U1', dept: '汽轮机', name: '除氧器', model: 'CY-2024', health: 95.6,
-      params: { 水位: [1.8, 2.5, 'm'], 温度: [104, 110, '℃'] } }
+      params: { 水位: [1.8, 2.5, 'm'], 温度: [104, 110, '℃'] } },
+
+    // ============ U2 #2 机组 ============
+    { id: 'U2-blower-a', unit: 'U2', dept: '锅炉', name: 'A送风机', model: 'YF-2024A', health: 98.1,
+      params: { 电流: [115, 150, 'A'], 温度: [42, 75, '℃'], 振动: [1.0, 5, 'mm/s'], 转速: [2978, 3200, 'rpm'] } },
+    { id: 'U2-blower-b', unit: 'U2', dept: '锅炉', name: 'B送风机', model: 'YF-2024A', health: 96.5,
+      params: { 电流: [120, 150, 'A'], 温度: [44, 75, '℃'], 振动: [1.3, 5, 'mm/s'], 转速: [2982, 3200, 'rpm'] } },
+    { id: 'U2-idf-a', unit: 'U2', dept: '锅炉', name: 'A引风机', model: 'YF-2024C', health: 95.5,
+      params: { 电流: [128, 150, 'A'], 温度: [55, 75, '℃'], 振动: [1.8, 5, 'mm/s'], 转速: [1448, 1600, 'rpm'] } },
+    { id: 'U2-idf-b', unit: 'U2', dept: '锅炉', name: 'B引风机', model: 'YF-2024C', health: 97.3,
+      params: { 电流: [122, 150, 'A'], 温度: [50, 75, '℃'], 振动: [1.4, 5, 'mm/s'], 转速: [1452, 1600, 'rpm'] } },
+    { id: 'U2-mill-a', unit: 'U2', dept: '锅炉', name: 'A磨煤机', model: 'MM-2024B', health: 92.0,
+      params: { 电流: [90, 130, 'A'], 温度: [62, 80, '℃'], 振动: [3.2, 6, 'mm/s'], 转速: [25, 28, 'rpm'] } },
+    { id: 'U2-mill-b', unit: 'U2', dept: '锅炉', name: 'B磨煤机', model: 'MM-2024B', health: 94.1,
+      params: { 电流: [86, 130, 'A'], 温度: [55, 80, '℃'], 振动: [2.6, 6, 'mm/s'], 转速: [25, 28, 'rpm'] } },
+    { id: 'U2-pump-a', unit: 'U2', dept: '汽轮机', name: '给水泵A', model: 'ZB-2024', health: 99.1,
+      params: { 电流: [175, 220, 'A'], 温度: [40, 70, '℃'], 振动: [0.6, 3, 'mm/s'], 转速: [2978, 3100, 'rpm'] } },
+    { id: 'U2-pump-b', unit: 'U2', dept: '汽轮机', name: '给水泵B', model: 'ZB-2024', health: 98.2,
+      params: { 电流: [180, 220, 'A'], 温度: [41, 70, '℃'], 振动: [0.7, 3, 'mm/s'], 转速: [2980, 3100, 'rpm'] } },
+    { id: 'U2-cond', unit: 'U2', dept: '汽轮机', name: '凝汽器', model: 'NQ-2024', health: 97.5,
+      params: { 真空: [-96, -98, 'kPa'], 水位: [1.3, 2.0, 'm'], 温度: [33, 45, '℃'] } },
+    { id: 'U2-deox', unit: 'U2', dept: '汽轮机', name: '除氧器', model: 'CY-2024', health: 96.8,
+      params: { 水位: [1.9, 2.5, 'm'], 温度: [105, 110, '℃'] } }
   ])
 
   const addDevice = (d) => {
