@@ -126,7 +126,6 @@ onUnmounted(() => kc?.dispose())
 .ref-card { margin-top: 14px; }
 .ref-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px; }
 .ref { background: #0a0e17; padding: 12px; border-radius: 8px; font-size: 12px; color: #94a3b8; border: 0.5px solid #1e293b; }
-</style>
 .ref-desc { color: #cbd5e1; margin: 6px 0; line-height: 1.5; }
 .ref-conf { font-size: 11px; color: #94a3b8; }
 </style>
