@@ -48,31 +48,47 @@ import { ElMessage } from 'element-plus'
 
 const store = useDataStore()
 const router = useRouter()
-const cur = ref('bearing')
 
-const cases = [
-  { id: 'bearing', name: 'A引风机轴承温度异常', kg: 8, kgLinks: 7, confidence: 94, refs: 3, cost: 128,
-    steps: [
-      { num: 1, c: '#3b82f6', title: '用户问询', body: '运行值班员发起故障溯源问询：<br>"A 引风机轴承温度异常，请进行故障溯源分析。"' },
-      { num: 2, c: '#22c55e', title: '答案格式转换', body: '解析实体：设备 = A 引风机｜异常 = 轴承温度｜当前 82.3℃｜正常 45℃｜变化率 +0.8℃/min' },
-      { num: 3, c: '#f59e0b', title: '知识检索', body: '知识图谱 2 跳邻居查询，匹配 3 条关联故障记录：<br>REF-1：润滑油脂劣化（94.2%）<br>REF-2：冷却水流量不足（87.6%）<br>REF-3：轴承内圈磨损（71.3%）' },
-      { num: 4, c: '#ef4444', title: '推理结论', body: '<strong>主因（94.2%）：</strong>轴承润滑油脂劣化，8000h 未更换。<br><strong>操作建议：</strong>立即更换 ISO VG 68 油脂，降负荷至 80%，48h 内停机检查。' }
-    ],
-    conclusion: `综合判断：以 REF-1（润滑油脂劣化，置信度 94.2%）为最可能原因。建议立即安排润滑油脂更换，同步检查冷却水系统。<br><br>若温度超过 90℃，立即手动停机并启动备用引风机。<br><br>本结论已通过知识图谱 3 层推理验证，并参考近 12 个月 ${3} 条历史故障记录。` },
-  { id: 'mill', name: 'A磨煤机振动超标', kg: 6, kgLinks: 5, confidence: 91, refs: 2, cost: 95,
-    steps: [
-      { num: 1, c: '#3b82f6', title: '用户问询', body: '智能预警系统自动推送：A 磨煤机振动超标，振动值 4.7mm/s。' },
-      { num: 2, c: '#22c55e', title: '答案格式转换', body: '解析：设备 = A 磨煤机｜振动 = 4.7mm/s（阈值 4.5）｜电流波动 ±12%' },
-      { num: 3, c: '#f59e0b', title: '知识检索', body: '匹配 4 条关联记录。振动频谱分析显示 1 倍转频分量增强，判断为磨辊不平衡。' },
-      { num: 4, c: '#ef4444', title: '推理结论', body: '<strong>主因（91.8%）：</strong>磨辊磨损不均，动不平衡。<br><strong>操作建议：</strong>降低给煤量至 70%，检查磨辊磨损。' }
-    ],
-    conclusion: '以 REF-1（磨辊磨损，91.8%）为最可能原因。建议降低给煤量，安排更换磨损磨辊。' }
-]
+// 根据 store 里的设备+报警动态生成溯源案例
+const cases = computed(() => {
+  // 收集所有有故障的设备（健康度 < 90 或 有未处理/已确认报警）
+  const faultyDevices = store.devices.filter(d => {
+    const hasAlarm = store.alarms.some(a => a.device === d.name && (a.st === 'unhandled' || a.st === 'confirmed'))
+    return d.health < 90 || hasAlarm
+  })
+  // 至少保证有两个示例（演示用）
+  if (faultyDevices.length === 0) faultyDevices.push(store.devices.find(d => d.name === 'A引风机') || store.devices[0])
 
-const curCase = computed(() => cases.find(c => c.id === cur.value) || cases[0])
+  return faultyDevices.slice(0, 6).map((d, idx) => {
+    const alarm = store.alarms.find(a => a.device === d.name && (a.st === 'unhandled' || a.st === 'confirmed'))
+    const faultName = alarm ? alarm.desc : (d.health < 80 ? `${d.name} 严重异常` : `${d.name} 状态预警`)
+    const faultPoint = alarm ? alarm.point : Object.keys(d.params || {})[0] || '温度'
+    const faultVal = alarm ? alarm.val : `${(d.params?.[faultPoint]?.[0] || 0).toFixed(1)}${d.params?.[faultPoint]?.[2] || ''}`
+
+    return {
+      id: d.id,
+      name: faultName,
+      device: d,
+      faultPoint,
+      faultVal,
+      kg: 8 + idx, kgLinks: 6 + idx, confidence: Math.round(82 + Math.random() * 13), refs: 2 + Math.floor(Math.random() * 3), cost: 80 + Math.floor(Math.random() * 60),
+      steps: [
+        { num: 1, c: '#3b82f6', title: '用户问询', body: `运行值班员发起故障溯源问询：<br>"${faultName}，请进行故障溯源分析。"` },
+        { num: 2, c: '#22c55e', title: '答案格式转换', body: `解析实体：设备 = ${d.name}｜专业 = ${d.dept}｜异常 = ${faultPoint}｜当前 ${faultVal}｜健康度 = ${d.health.toFixed(1)}` },
+        { num: 3, c: '#f59e0b', title: '知识检索', body: `知识图谱 2 跳邻居查询，匹配 ${3 + Math.floor(Math.random() * 2)} 条关联故障记录：<br>REF-1：${d.dept === '锅炉' ? '设备老化' : '机械磨损'}（${(85 + Math.random() * 10).toFixed(1)}%）<br>REF-2：${d.dept === '锅炉' ? '参数异常' : '润滑失效'}（${(78 + Math.random() * 10).toFixed(1)}%）<br>REF-3：${d.dept === '锅炉' ? '维护不足' : '温度过高'}（${(65 + Math.random() * 10).toFixed(1)}%）` },
+        { num: 4, c: '#ef4444', title: '推理结论', body: `<strong>主因（${(85 + Math.random() * 10).toFixed(1)}%）：</strong>${d.dept === '锅炉' ? '设备老化导致参数异常' : '机械磨损导致温度升高'}。<br><strong>操作建议：</strong>${d.health < 80 ? '立即停机检查，48h 内完成维修' : '降负荷至 80%，加强巡检频次'}。` }
+      ],
+      conclusion: `综合判断：以 REF-1 为最可能原因。建议立即安排检修，参考近 12 个月 ${2 + Math.floor(Math.random() * 3)} 条同类历史故障记录。<br><br>本结论已通过知识图谱 3 层推理验证，平均推理置信度 ${(85 + Math.random() * 10).toFixed(1)}%。<br><br><strong>推理路径：</strong>异常检测 → 知识图谱查询 → 历史案例匹配 → 故障树推理 → 结论生成。<br><br><strong>相关类似故障：</strong>${store.alarms.filter(a => a.dept === d.dept && a.id !== alarm?.id).slice(0, 3).map(a => a.desc).join('；') || '暂无'}<br><br><strong>建议措施：</strong>① 立即派单处理 ② 通知值班长 ③ 调整运行参数 ④ 跟踪处理结果。`
+    }
+  })
+})
+
+const cur = ref('')
+const curCase = computed(() => cases.value.find(c => c.id === cur.value) || cases.value[0])
+if (!cur.value && cases.value.length) cur.value = cases.value[0].id
 
 const viewKnowledge = () => router.push('/knowledge-graph')
-const exportReport = () => ElMessage.success('故障溯源报告已生成（含 4 步推理 + 引用溯源 + 操作建议），可在「统计报表 → 报告中心」下载')
+const exportReport = () => ElMessage.success('故障溯源报告已生成（含 4 步推理 + 引用溯源 + 操作建议）')
 </script>
 
 <style scoped>

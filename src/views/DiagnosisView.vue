@@ -21,7 +21,7 @@
       </div>
     </div></el-col>
     <el-col :span="12">
-      <div class="cd" style="margin-bottom:14px"><div class="cd-t">知识图谱推理</div><div ref="kg" style="height:220px"></div></div>
+      <div class="cd" style="margin-bottom:14px"><div class="cd-t">知识图谱推理（拖动节点可调整位置）</div><div ref="kg" style="height:600px"></div></div>
       <div class="cd"><div class="cd-t">引用溯源</div>
         <div v-for="(r,i) in cur.refs" :key="i" class="ref"><span class="tg" :class="r.conf>90?'tg-w':'tg-i'">{{ r.id }}</span> <span style="color:#64748b;font-size:11px">{{ r.date }}</span> · {{ r.desc }} · <span style="color:#3b82f6">置信度 {{ r.conf }}</span></div>
       </div>

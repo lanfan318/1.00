@@ -91,14 +91,17 @@ const initCharts = () => {
     ]
   })
   const eff = cur.value?.health >= 80 ? 80 + (cur.value.health - 80) * 0.5 : cur.value?.health * 0.8
+  const effRounded = parseFloat(eff.toFixed(1))
   gCh = echarts.init(cg.value)
   gCh.setOption({
     series: [{
       type: 'gauge', min: 0, max: 100,
-      progress: { show: true, width: 8 },
-      axisLine: { lineStyle: { width: 8, color: [[0.6, '#ef4444'], [0.85, '#f59e0b'], [1, '#22c55e']] } },
+      progress: { show: true, width: 12 },
+      axisLine: { lineStyle: { width: 12, color: [[0.6, '#ef4444'], [0.85, '#f59e0b'], [1, '#22c55e']] } },
       pointer: { show: false }, axisTick: { show: false }, splitLine: { show: false }, axisLabel: { show: false },
-      data: [{ value: eff, detail: { valueAnimation: true, fontSize: 30, color: '#22c55e', formatter: '{value}%' }, name: '运行效率' }]
+      title: { color: '#94a3b8', fontSize: 12, offsetCenter: [0, '70%'] },
+      detail: { valueAnimation: true, fontSize: 28, color: '#22c55e', offsetCenter: [0, '0%'], formatter: '{value}%' },
+      data: [{ value: effRounded, name: '运行效率' }]
     }]
   })
 }

@@ -26,10 +26,10 @@
   </el-row>
 
   <el-row :gutter="14" style="margin-top:14px">
-    <el-col :span="12"><div class="cd"><div class="cd-h"><span class="cd-t">报警次数 Top10（按测点）</span></div>
+    <el-col :span="12"><div class="cd"><div class="cd-h"><span class="cd-t">报警次数 Top10（按测点）</span><span class="cd-sub">单位：次 | 本期累计 <strong style="color:#3b82f6">{{ totalTimes }}</strong> 次</span></div>
       <div ref="chTop10" style="height:280px"></div>
     </div></el-col>
-    <el-col :span="12"><div class="cd"><div class="cd-h"><span class="cd-t">报警时长 Top10（按测点）</span></div>
+    <el-col :span="12"><div class="cd"><div class="cd-h"><span class="cd-t">报警时长 Top10（按测点）</span><span class="cd-sub">单位：分钟 | 本期累计 <strong style="color:#ef4444">{{ totalMins }}</strong> 分钟</span></div>
       <div ref="chDur" style="height:280px"></div>
     </div></el-col>
   </el-row>
@@ -63,6 +63,8 @@ const stats = computed(() => store.stats)
 const cnt = (l) => store.unitAlarms(store.selectedUnitId).filter(a => a.l === l).length
 const suppressed = computed(() => store.unitAlarms(store.selectedUnitId).filter(a => a.st === 'suppressed').length)
 const filterCnt = computed(() => Math.floor(store.stats.total * 0.05 + Math.random() * 3))
+const totalTimes = computed(() => 28 + Math.floor(Math.random() * 5))
+const totalMins = computed(() => 196 + Math.floor(Math.random() * 20))
 
 const profCnt = computed(() => {
   const c = { '锅炉': 0, '汽机': 0, '辅网': 0 }
