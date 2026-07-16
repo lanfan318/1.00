@@ -116,21 +116,17 @@ onUnmounted(() => kc?.dispose())
 .tg-w { background: rgba(245,158,11,0.12); color: #f59e0b; }
 .tg-i { background: rgba(59,130,246,0.12); color: #3b82f6; }
 
-/* 两列等高（用 grid 强制，避开 el-row 默认样式干扰） */
-.diag-row { display: grid !important; grid-template-columns: 1fr 1fr; gap: 14px; align-items: stretch; }
-.diag-row .el-col { width: auto !important; padding: 0 !important; }
-.diag-col { display: flex; }
-.diag-card { flex: 1; display: flex; flex-direction: column; }
-
-/* 知识图谱：右侧与左侧等高 */
-.kg-card { display: flex; flex-direction: column; height: 100%; flex: 1; }
-.kg-card .cd-t { flex-shrink: 0; }
+/* 核心：用 flex 强制两列等高，避开 el-row 默认样式 */
+:deep(.el-row.diag-row) { display: flex !important; flex-wrap: wrap; align-items: stretch; }
+:deep(.el-row.diag-row .el-col) { display: flex; }
+.diag-card, .kg-card { flex: 1; min-height: 0; }
 .kg-chart { flex: 1; min-height: 0; }
 
 /* 引用溯源：全宽放在底部 */
 .ref-card { margin-top: 14px; }
 .ref-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px; }
 .ref { background: #0a0e17; padding: 12px; border-radius: 8px; font-size: 12px; color: #94a3b8; border: 0.5px solid #1e293b; }
+</style>
 .ref-desc { color: #cbd5e1; margin: 6px 0; line-height: 1.5; }
 .ref-conf { font-size: 11px; color: #94a3b8; }
 </style>
