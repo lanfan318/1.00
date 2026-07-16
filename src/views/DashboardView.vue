@@ -5,6 +5,17 @@
     <el-tab-pane v-for="u in store.units" :key="u.id" :label="`${u.name} · ${u.type} · ${u.capacity}MW`" :name="u.id" />
   </el-tabs>
 
+  <!-- 专业切换：锅炉 / 汽轮 / 全部 -->
+  <div class="dept-switch">
+    <span class="dept-lbl">监控专业：</span>
+    <el-radio-group v-model="deptMode" size="small">
+      <el-radio-button value="all">全部</el-radio-button>
+      <el-radio-button value="锅炉">🔥 锅炉</el-radio-button>
+      <el-radio-button value="汽轮机">⚙ 汽轮机</el-radio-button>
+    </el-radio-group>
+    <span class="dept-hint">点击切换查看不同专业的设备</span>
+  </div>
+
   <!-- 机组实时概览 + 排放指标 -->
   <el-row :gutter="14" style="margin-bottom:14px">
     <el-col :span="12"><div class="cd">
@@ -31,14 +42,14 @@
 
   <!-- 设备健康度 -->
   <el-row :gutter="14" style="margin-bottom:14px">
-    <el-col :span="12"><div class="cd"><div class="cd-t"><span class="sd ok"></span>锅炉设备健康度（{{ store.selectedUnit.name }}）</div>
+    <el-col v-if="showBoiler" :span="showTurbine?12:24"><div class="cd"><div class="cd-t"><span class="sd ok"></span>锅炉设备健康度（{{ store.selectedUnit.name }}）</div>
       <div v-for="d in boiler" :key="d.id" class="hb-row">
         <span class="hb-n">{{ d.name }}</span>
         <div class="hb-b"><div class="hb-f" :class="cls(d.health)" :style="{width:d.health+'%'}"></div></div>
         <span class="hb-v" :style="{color:col(d.health)}">{{ d.health.toFixed(1) }}</span>
       </div>
     </div></el-col>
-    <el-col :span="12"><div class="cd"><div class="cd-t"><span class="sd ok"></span>汽轮机设备健康度（{{ store.selectedUnit.name }}）</div>
+    <el-col v-if="showTurbine" :span="showBoiler?12:24"><div class="cd"><div class="cd-t"><span class="sd ok"></span>汽轮机设备健康度（{{ store.selectedUnit.name }}）</div>
       <div v-for="d in turbine" :key="d.id" class="hb-row">
         <span class="hb-n">{{ d.name }}</span>
         <div class="hb-b"><div class="hb-f" :class="cls(d.health)" :style="{width:d.health+'%'}"></div></div>
@@ -69,8 +80,17 @@ import { useDataStore } from '@/stores/data'
 
 const store = useDataStore()
 
-const boiler = computed(() => store.unitDevices(store.selectedUnitId).filter(d => d.dept === '锅炉'))
-const turbine = computed(() => store.unitDevices(store.selectedUnitId).filter(d => d.dept === '汽轮机'))
+const deptMode = ref('all')
+const boiler = computed(() => {
+  const arr = store.unitDevices(store.selectedUnitId).filter(d => d.dept === '锅炉')
+  return deptMode.value === '汽轮机' ? [] : arr
+})
+const turbine = computed(() => {
+  const arr = store.unitDevices(store.selectedUnitId).filter(d => d.dept === '汽轮机')
+  return deptMode.value === '锅炉' ? [] : arr
+})
+const showBoiler = computed(() => deptMode.value !== '汽轮机')
+const showTurbine = computed(() => deptMode.value !== '锅炉')
 
 const overviewStatus = computed(() => {
   const warn = store.unitDevices(store.selectedUnitId).filter(d => d.health < 85).length
@@ -162,10 +182,15 @@ onUnmounted(() => { clearInterval(iv); c1?.dispose(); c2?.dispose(); c3?.dispose
 </script>
 
 <style scoped>
-.unit-tabs { margin-bottom: 14px; }
+.unit-tabs { margin-bottom: 12px; }
 :deep(.unit-tabs .el-tabs__nav-wrap::after) { background-color: transparent; }
 :deep(.unit-tabs .el-tabs__item) { color: #94a3b8; font-size: 14px; height: 40px; line-height: 40px; }
 :deep(.unit-tabs .el-tabs__item.is-active) { color: #3b82f6; font-weight: 500; }
+.dept-switch { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; padding: 8px 14px; background: #0a0e17; border-radius: 8px; }
+.dept-lbl { font-size: 12px; color: #94a3b8; }
+.dept-hint { font-size: 11px; color: #64748b; margin-left: auto; }
+:deep(.dept-switch .el-radio-button__inner) { background: #111827; border-color: #1e293b; color: #94a3b8; }
+:deep(.dept-switch .el-radio-button.is-active .el-radio-button__inner) { background: rgba(59,130,246,0.15); border-color: #3b82f6; color: #3b82f6; box-shadow: none; }
 .cd { background: #111827; border: 0.5px solid #1e293b; border-radius: 10px; padding: 16px; }
 .cd-h { display: flex; justify-content: space-between; margin-bottom: 12px; }
 .cd-t { font-size: 13px; font-weight: 500; }

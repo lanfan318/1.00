@@ -12,17 +12,17 @@
         <div style="font-size:11px;color:#94a3b8;margin-bottom:4px">诊断对象</div>
         <div style="font-size:14px;font-weight:500">{{ cur.name }} — {{ cur.fault }}</div>
       </div>
-      <div class="sect"><div class="sect-t">智能分析结果</div><p>{{ cur.analysis }}</p></div>
-      <div class="sect"><div class="sect-t">可能原因</div>
+      <div class="sect"><div class="cd-t">智能分析结果</div><p>{{ cur.analysis }}</p></div>
+      <div class="sect"><div class="cd-t">可能原因</div>
         <div v-for="(c,i) in cur.causes" :key="i" class="cause"><span class="tg" :class="c.conf>90?'tg-w':'tg-i'">{{ c.ref }} · {{ c.conf }}</span> {{ c.text }}</div>
       </div>
-      <div class="sect"><div class="sect-t" style="color:#22c55e">操作指导</div>
+      <div class="sect"><div class="cd-t" style="color:#22c55e">操作指导</div>
         <p v-for="(g,i) in cur.guide" :key="i">{{ i+1 }}. {{ g }}</p>
       </div>
     </div></el-col>
-    <el-col :span="12">
-      <div class="cd" style="margin-bottom:14px"><div class="cd-t">知识图谱推理（拖动节点可调整位置）</div><div ref="kg" style="height:600px"></div></div>
-      <div class="cd"><div class="cd-t">引用溯源</div>
+    <el-col :span="12" class="diag-right">
+      <div class="cd kg-card"><div class="cd-t">知识图谱推理（拖动节点可调整位置）</div><div ref="kg" class="kg-chart"></div></div>
+      <div class="cd ref-card"><div class="cd-t">引用溯源</div>
         <div v-for="(r,i) in cur.refs" :key="i" class="ref"><span class="tg" :class="r.conf>90?'tg-w':'tg-i'">{{ r.id }}</span> <span style="color:#64748b;font-size:11px">{{ r.date }}</span> · {{ r.desc }} · <span style="color:#3b82f6">置信度 {{ r.conf }}</span></div>
       </div>
     </el-col>
@@ -106,4 +106,11 @@ onUnmounted(() => kc?.dispose())
 .tg-w { background: rgba(245,158,11,0.12); color: #f59e0b; }
 .tg-i { background: rgba(59,130,246,0.12); color: #3b82f6; }
 .ref { background: #0a0e17; padding: 10px; border-radius: 8px; margin-bottom: 6px; font-size: 12px; color: #94a3b8; }
+
+/* 右侧：知识图谱占主区域，引用溯源放底部 */
+.diag-right { display: flex; flex-direction: column; min-height: calc(100vh - 130px); }
+.diag-right .kg-card { flex: 1; min-height: 0; display: flex; flex-direction: column; margin-bottom: 14px; }
+.diag-right .kg-card .cd-t { flex-shrink: 0; }
+.kg-chart { flex: 1; min-height: 500px; }
+.diag-right .ref-card { flex-shrink: 0; max-height: 240px; overflow-y: auto; }
 </style>

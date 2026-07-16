@@ -1,7 +1,16 @@
 <template>
 <div>
-  <div class="tab-bar">
-    <el-button v-for="c in cases" :key="c.id" :type="cur===c.id?'primary':''" size="small" @click="cur=c.id">{{ c.name }}</el-button>
+  <div class="case-bar">
+    <span class="case-lbl">故障案例（点击切换）：</span>
+    <div class="case-cards">
+      <div v-for="c in cases" :key="c.id" class="case-card" :class="{on:cur===c.id}" @click="cur=c.id">
+        <div class="cc-dot" :style="{background: c.device.health<70?'#ef4444':c.device.health<85?'#f59e0b':'#3b82f6'}"></div>
+        <div class="cc-info">
+          <div class="cc-name">{{ c.name }}</div>
+          <div class="cc-dept">{{ c.device.dept }} · 健康度 {{ c.device.health.toFixed(1) }}</div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <el-row :gutter="14">
@@ -93,6 +102,15 @@ const exportReport = () => ElMessage.success('故障溯源报告已生成（含 
 
 <style scoped>
 .tab-bar { display: flex; gap: 6px; margin-bottom: 14px; }
+.case-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.case-lbl { font-size: 12px; color: #94a3b8; flex-shrink: 0; }
+.case-cards { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; }
+.case-card { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #0a0e17; border: 1px solid #1e293b; border-radius: 8px; cursor: pointer; transition: 0.15s; min-width: 180px; }
+.case-card:hover { border-color: #3b82f6; background: rgba(59,130,246,0.05); }
+.case-card.on { border-color: #3b82f6; background: rgba(59,130,246,0.12); }
+.cc-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.cc-name { font-size: 12px; color: #e2e8f0; font-weight: 500; margin-bottom: 2px; }
+.cc-dept { font-size: 10px; color: #94a3b8; }
 .cd { background: #111827; border: 0.5px solid #1e293b; border-radius: 10px; padding: 16px; }
 .cd-t { font-size: 13px; font-weight: 500; margin-bottom: 10px; }
 .tl { display: flex; flex-direction: column; gap: 10px; }
