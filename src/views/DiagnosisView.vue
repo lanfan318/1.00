@@ -143,11 +143,10 @@ onUnmounted(() => kc?.dispose())
 .tg-w { background: rgba(245,158,11,0.12); color: #f59e0b; }
 .tg-i { background: rgba(59,130,246,0.12); color: #3b82f6; }
 
-/* 核心：用 flex 强制两列等高，避开 el-row 默认样式 */
-:deep(.el-row.diag-row) { display: flex !important; flex-wrap: wrap; align-items: stretch; }
-:deep(.el-row.diag-row .el-col) { display: flex; }
-.diag-card, .kg-card { flex: 1; min-height: 0; }
-.kg-chart { flex: 1; min-height: 0; }
+/* 知识图谱：固定高度，简单可靠 */
+.kg-card { display: flex; flex-direction: column; }
+.kg-card .cd-t { flex-shrink: 0; }
+.kg-chart { width: 100%; height: 500px; }
 
 /* 引用溯源：全宽放在底部 */
 .ref-card { margin-top: 14px; }
