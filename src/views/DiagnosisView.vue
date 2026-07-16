@@ -6,8 +6,8 @@
       <el-option v-for="d in diagList" :key="d.id" :value="d.id" :label="d.name + '（' + d.dept + '）' + (d.alarm ? ' — ' + d.alarm : '')"/>
     </el-select>
   </div>
-  <el-row :gutter="14" align="stretch">
-    <el-col :span="12"><div class="cd"><div class="cd-t">智能诊断</div>
+  <el-row :gutter="14" class="diag-row">
+    <el-col :span="12" class="diag-col"><div class="cd diag-card"><div class="cd-t">智能诊断</div>
       <div style="background:#0a0e17;border-radius:8px;padding:14px;margin-bottom:12px">
         <div style="font-size:11px;color:#94a3b8;margin-bottom:4px">诊断对象</div>
         <div style="font-size:14px;font-weight:500">{{ cur.name }} — {{ cur.fault }}</div>
@@ -116,8 +116,13 @@ onUnmounted(() => kc?.dispose())
 .tg-w { background: rgba(245,158,11,0.12); color: #f59e0b; }
 .tg-i { background: rgba(59,130,246,0.12); color: #3b82f6; }
 
+/* 两列等高 */
+.diag-row { display: flex; align-items: stretch; }
+.diag-col { display: flex; }
+.diag-card { flex: 1; display: flex; flex-direction: column; }
+
 /* 知识图谱：右侧与左侧等高 */
-.kg-card { display: flex; flex-direction: column; height: 100%; }
+.kg-card { display: flex; flex-direction: column; height: 100%; flex: 1; }
 .kg-card .cd-t { flex-shrink: 0; }
 .kg-chart { flex: 1; min-height: 500px; }
 
