@@ -1,0 +1,16 @@
+# 智能体问答服务 —— FastAPI 镜像
+FROM python:3.11-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    TZ=Asia/Shanghai
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY app ./app
+
+EXPOSE 9001
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "9001"]

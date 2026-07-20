@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: timescale/timescaledb:2.15.1-pg15
+    container_name: ppa-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ppa_db
+      POSTGRES_USER: ppa_user
+      POSTGRES_PASSWORD: ppa_pass_2024
+      TZ: Asia/Shanghai
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./sql/init-timescale.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ppa_user -d ppa_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: ppa-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+  redisdata:

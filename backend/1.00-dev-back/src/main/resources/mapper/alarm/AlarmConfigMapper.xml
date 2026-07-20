@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hollysys.ppa.module.alarm.config.mapper.AlarmConfigMapper">
+
+    <!-- 分页查询报警配置列表（关联维度表获取名称） -->
+    <select id="selectPageWithNames" resultType="com.hollysys.ppa.module.alarm.config.vo.AlarmConfigListVO">
+        SELECT
+            c.id,
+            c.rule_name,
+            c.rule_code,
+            u.unit_name,
+            sp.specialty_name,
+            sy.system_name,
+            mp.point_name AS measure_point_name,
+            c.alarm_type,
+            c.alarm_level,
+            c.enabled,
+            c.description,
+            c.created_at
+        FROM t_alarm_config c
+        LEFT JOIN dim_unit u ON c.unit_id = u.id AND u.deleted = 0
+        LEFT JOIN dim_specialty sp ON c.specialty_id = sp.id AND sp.deleted = 0
+        LEFT JOIN dim_system sy ON c.system_id = sy.id AND sy.deleted = 0
+        LEFT JOIN dim_measure_point mp ON c.measure_point_id = mp.id AND mp.deleted = 0
+        WHERE c.deleted = 0
+        <if test="query.unitId != null">
+            AND c.unit_id = #{query.unitId}
+        </if>
+        <if test="query.specialtyId != null">
+            AND c.specialty_id = #{query.specialtyId}
+        </if>
+        <if test="query.systemId != null">
+            AND c.system_id = #{query.systemId}
+        </if>
+        <if test="query.alarmType != null">
+            AND c.alarm_type = #{query.alarmType}
+        </if>
+        <if test="query.keyword != null and query.keyword != ''">
+            AND (c.rule_name LIKE CONCAT('%', #{query.keyword}, '%')
+                 OR c.rule_code LIKE CONCAT('%', #{query.keyword}, '%'))
+        </if>
+        ORDER BY c.sort_order ASC, c.id DESC
+    </select>
+
+    <!-- 根据配置ID逻辑删除关联的所有规则明细 -->
+    <update id="softDeleteRulesByConfigId">
+        UPDATE t_alarm_rule
+        SET deleted = 1, updated_at = NOW()
+        WHERE config_id = #{configId} AND deleted = 0
+    </update>
+
+    <!-- 批量更新启用状态 -->
+    <update id="updateEnabled">
+        UPDATE t_alarm_config
+        SET enabled = #{enabled}, updated_at = NOW()
+        WHERE id = #{id} AND deleted = 0
+    </update>
+
+</mapper>

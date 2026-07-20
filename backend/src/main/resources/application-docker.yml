@@ -1,0 +1,46 @@
+# =============================================
+# Docker / 容器编排环境
+# 由根目录 docker-compose.yml 通过 SPRING_PROFILES_ACTIVE=docker 激活
+# 依赖服务：postgres(5432) / redis(6379)
+# 可选外部服务：KG 服务(9000) / Agent 服务(9001)，未启动时仅相关功能不可用
+# =============================================
+spring:
+  flyway:
+    enabled: true
+    # baseline-version=0 确保首次启动能执行 V1 建表迁移（避免被当作已基线而跳过）
+    baseline-on-migrate: true
+    baseline-version: 0
+    table: flyway_schema_history
+    locations: classpath:db/migration/pg
+
+  datasource:
+    url: jdbc:postgresql://postgres:5432/ppa_db?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    username: ppa_user
+    password: ppa_pass_2024
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 300000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+
+  data:
+    redis:
+      host: redis
+      port: 6379
+      password:
+      database: 0
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 4
+          max-wait: 5000ms
+      timeout: 5000ms
+
+logging:
+  level:
+    root: INFO
+    com.hollysys.ppa: INFO
+    org.springframework.web: INFO

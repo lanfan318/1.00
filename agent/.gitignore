@@ -1,0 +1,15 @@
+# 本地运行 / 测试产物
+*.db
+*.sqlite
+*.log
+__pycache__/
+*.pyc
+venv/
+.env
+# 调试用的临时请求文件
+req.json
+chat.json
+create.json
+c2.json
+q2.json
+serve.log

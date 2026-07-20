@@ -1,0 +1,142 @@
+# 电厂智能预警与故障诊断 Agent 系统 —— 一体化编排
+# 一条命令拉起：PostgreSQL(TimescaleDB) + Redis + 后端(Spring Boot) + 算法服务(FastAPI) + 前端(Nginx)
+#
+# 使用：
+#   docker compose up -d --build      # 首次构建并启动
+#   docker compose logs -f backend    # 查看后端日志
+#   docker compose logs -f algorithm  # 查看算法服务日志
+#   docker compose down               # 停止并移除容器（数据卷保留）
+#
+# 访问：
+#   前端页面      http://localhost          (nginx 80 -> 前端构建产物)
+#   后端 API      http://localhost/api/...   (nginx 反向代理 -> backend:8080)
+#   算法服务      http://localhost/algo/api/...  (nginx 反向代理 -> algorithm:8001)
+#   算法健康检查  http://localhost/algo/health
+#   接口文档      http://localhost:8080/doc.html  (Knife4j)
+#   数据库        localhost:5432  (ppa_db / ppa_user / ppa_pass_2024)
+#   缓存          localhost:6379
+#   算法服务直连  localhost:8001  (容器端口映射，便于本地调试 / Streamlit Demo)
+
+version: '3.8'
+
+services:
+  postgres:
+    image: timescale/timescaledb:2.15.1-pg15
+    container_name: ppa-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ppa_db
+      POSTGRES_USER: ppa_user
+      POSTGRES_PASSWORD: ppa_pass_2024
+      TZ: Asia/Shanghai
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/sql/init-timescale.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ppa_user -d ppa_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: ppa-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ppa-backend
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      TZ: Asia/Shanghai
+      # 可选外部服务（未部署时相关功能报错但不影响整体启动）
+      KG_SERVICE_URL: http://localhost:9000
+      AGENT_SERVICE_URL: http://localhost:9001
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  algorithm:
+    build:
+      context: ./algorithm
+      dockerfile: Dockerfile
+    container_name: ppa-algorithm
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+    ports:
+      - "8001:8001"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8001/health').status==200 else 1)\" || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  agent:
+    build:
+      context: ./agent
+      dockerfile: Dockerfile
+    container_name: ppa-agent
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      DATABASE_URL: postgresql://ppa_user:ppa_pass_2024@postgres:5432/ppa_db
+      BACKEND_URL: http://backend:8080
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://api.openai.com/v1}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-gpt-4o-mini}
+    ports:
+      - "9001:9001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:9001/health').status==200 else 1)\" || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  nginx:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ppa-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - algorithm
+      - agent
+
+volumes:
+  pgdata:
+  redisdata:
