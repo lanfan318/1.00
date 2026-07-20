@@ -7,9 +7,9 @@ spring:
     locations: classpath:db/migration/mysql
 
   datasource:
-    url: jdbc:mariadb://your-db-host:3306/ppa_db?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&createDatabaseIfNotExist=true
-    username: your_username
-    password: your_password
+    url: jdbc:mariadb://rm-bp138w10uwql059mtio.mysql.rds.aliyuncs.com:3306/ppa_db?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&createDatabaseIfNotExist=true
+    username: xzh123
+    password: 12345678abcA
     driver-class-name: org.mariadb.jdbc.Driver
     hikari:
       minimum-idle: 5
