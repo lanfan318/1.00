@@ -14,11 +14,13 @@ from app.services.arx_modeler import ARXModeler
 from app.services.optimizer import Optimizer
 from app.services.residual_detector import ResidualDetector
 from app.services.simulation import FOPDTSimulator
+from app.agent_api import router as agent_router
 from app.models.schemas import CleanRequest, ModelingRequest, SimulationRequest, ResidualAlarmRequest
 
 app = FastAPI(title="工业多变量时序建模算法服务", version="1.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
-_data_cache = {}
+_data_cache: dict = {}
+app.include_router(agent_router)
 
 def _clean_value(v):
     """确保单个值不含 NaN/Inf，可以安全 JSON 序列化"""
