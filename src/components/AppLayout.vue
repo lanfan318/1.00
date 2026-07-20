@@ -1,6 +1,6 @@
 <template>
   <el-container class="shell">
-    <el-aside width="220px" class="sidebar">
+    <el-aside v-if="!isAgentPage" width="220px" class="sidebar">
       <div class="logo">
         <div class="logo-icon">HF</div>
         <div class="logo-text">HiFire<span> Agent</span></div>
@@ -38,7 +38,7 @@
     </el-aside>
 
     <el-container>
-      <el-header class="topbar">
+      <el-header v-if="!isAgentPage" class="topbar">
         <span class="title">{{ $route.meta?.title || '' }}</span>
         <div class="topbar-right">
           <span class="user-info"><el-icon><UserFilled /></el-icon>{{ userStore.username }} · {{ userStore.role }}</span>
@@ -47,7 +47,7 @@
           <el-button link class="logout-btn" @click="handleLogout">退出</el-button>
         </div>
       </el-header>
-      <el-main class="main">
+      <el-main :class="{'main': !isAgentPage, 'main-agent': isAgentPage}">
         <router-view />
       </el-main>
     </el-container>
@@ -55,13 +55,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { UserFilled } from '@element-plus/icons-vue'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
+
+const isAgentPage = computed(() => route.path === '/agent')
 
 const clock = ref('')
 let timer
@@ -94,6 +97,7 @@ const handleLogout = () => {
 .logout-btn { color: #64748b; font-size: 12px; }
 .logout-btn:hover { color: #ef4444; }
 .main { background: #0a0e17; padding: 16px 20px; }
+.main-agent { padding: 0; background: #fff; }
 :deep(.el-menu) { background: transparent !important; }
 :deep(.el-sub-menu__title:hover), :deep(.el-menu-item:hover) { background: #1a2332 !important; }
 :deep(.el-menu-item.is-active) { background: rgba(59,130,246,0.12) !important; }

@@ -21,7 +21,11 @@
       </div>
     </div></el-col>
     <el-col :span="12" class="diag-col">
-      <div class="cd kg-card"><div class="cd-t">知识图谱推理（拖动节点可调整位置）</div><div ref="kg" class="kg-chart"></div></div>
+      <div class="cd kg-card"><div class="cd-t">知识图谱推理</div>
+        <div class="kg-chart">
+          <ReasoningGraph :case-data="currentGraph" :selected-id="selNodeId" @update:selected-id="v => selNodeId = v" />
+        </div>
+      </div>
     </el-col>
   </el-row>
 
@@ -41,29 +45,24 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
-import * as echarts from 'echarts'
+import { ref, computed } from 'vue'
 import { useDataStore } from '@/stores/data'
+import ReasoningGraph from '@/components/ReasoningGraph.vue'
 
 const store = useDataStore()
 
-// 诊断对象列表：直接从 store.devices 生成
 const diagList = computed(() => {
   return store.devices.map(d => {
     const alarm = store.alarms.find(a => a.device === d.name && a.st !== 'resolved')
     return {
-      id: d.id,
-      name: d.name,
-      dept: d.dept,
+      id: d.id, name: d.name, dept: d.dept,
       fault: alarm ? alarm.desc : '当前无报警'
     }
   })
 })
 
-// 当前选中的设备ID，默认第一台
 const did = ref(store.devices[0]?.id || '')
 
-// 诊断数据（按设备ID索引）
 const allDiagnoses = {
   'U1-idf-a': { name: 'A引风机', fault: '轴承温度异常升高',
     analysis: '检测到轴承温度 82.3℃，较正常工况偏离 37℃，温升速率 +0.8℃/min。振动频谱显示轴承外圈特征频率增强，润滑油铁谱铁磁性颗粒浓度 120ppm。综合判断：轴承润滑不良导致摩擦加剧。',
@@ -82,7 +81,6 @@ const allDiagnoses = {
     refs: [{ id: 'REF-1', date: '2025-04-18', desc: '给水泵修复后效率恢复 93%', conf: '88.4%' }, { id: 'REF-2', date: '2025-01-22', desc: '密封环更换记录', conf: '76.1%' }] }
 }
 
-// 通用兜底（其他设备显示默认模板）
 const defaultDiagnosis = (d) => ({
   name: d.name,
   fault: '该设备暂无历史故障记录',
@@ -92,65 +90,127 @@ const defaultDiagnosis = (d) => ({
   refs: []
 })
 
-// 当前选中设备的诊断
 const cur = computed(() => {
   if (allDiagnoses[did.value]) return allDiagnoses[did.value]
   const d = store.devices.find(x => x.id === did.value)
   return d ? defaultDiagnosis(d) : { name: '请选择设备', fault: '', analysis: '', causes: [], guide: [], refs: [] }
 })
 
-// 知识图谱
-const kg = ref(null)
-let kc
-
-const initKG = () => {
-  if (kc) kc.dispose()
-  const el = kg.value
-  if (!el) return
-  kc = echarts.init(el)
-  const d = cur.value
-  const map = {
-    'A引风机': [{ n: '轴承温度高', c: '#ef4444' }, { n: '润滑失效', c: '#f59e0b' }, { n: '冷却不足', c: '#f59e0b' }, { n: '轴承磨损', c: '#f59e0b' }, { n: '更换油脂', c: '#22c55e' }, { n: '清洗滤网', c: '#22c55e' }, { n: '安排检修', c: '#22c55e' }],
-    'A磨煤机': [{ n: '振动超标', c: '#ef4444' }, { n: '磨辊磨损', c: '#f59e0b' }, { n: '煤质变差', c: '#f59e0b' }, { n: '更换磨辊', c: '#22c55e' }, { n: '调整给煤量', c: '#22c55e' }],
-    '给水泵B': [{ n: '效率下降', c: '#ef4444' }, { n: '气蚀', c: '#f59e0b' }, { n: '密封环磨损', c: '#f59e0b' }, { n: '检修叶轮', c: '#22c55e' }, { n: '更换密封环', c: '#22c55e' }]
+// 各设备对应的分层推理图
+const graphCases = {
+  'A引风机': {
+    title: 'A引风机轴承温度异常',
+    nodes: [
+      { id: 'u1', label: 'A引风机轴承温度>82℃', type: 'user', layer: 0, sub: 0, w: 220, h: 36 },
+      { id: 's1', label: 'A引风机轴承', type: 'symptom', layer: 1, sub: 0, w: 130, h: 32 },
+      { id: 'm1', label: '润滑油脂劣化', type: 'middle', layer: 2, sub: 0, w: 110, h: 32 },
+      { id: 'm2', label: '冷却水管路堵塞', type: 'middle', layer: 2, sub: 1, w: 130, h: 32 },
+      { id: 'm3', label: '轴向载荷异常', type: 'middle', layer: 2, sub: 2, w: 120, h: 32 },
+      { id: 'c1', label: '润滑失效', type: 'cause', layer: 3, sub: 0, w: 100, h: 40, pct: 94 },
+      { id: 'c2', label: '冷却不足', type: 'cause', layer: 3, sub: 1, w: 100, h: 40, pct: 88 },
+      { id: 'c3', label: '轴承内圈磨损', type: 'cause', layer: 3, sub: 2, w: 130, h: 40, pct: 71 },
+      { id: 'r1', label: '更换油脂 100%', type: 'solution', layer: 4, sub: 0, w: 110, h: 28 },
+      { id: 'r2', label: '清洗滤网 100%', type: 'solution', layer: 4, sub: 0, w: 110, h: 28 },
+      { id: 'r3', label: '检修冷却器 100%', type: 'solution', layer: 4, sub: 1, w: 120, h: 28 },
+      { id: 'r4', label: '清理管路 100%', type: 'solution', layer: 4, sub: 1, w: 110, h: 28 },
+      { id: 'r5', label: '动平衡校正 100%', type: 'solution', layer: 4, sub: 2, w: 120, h: 28 },
+      { id: 'r6', label: '更换轴承 100%', type: 'solution', layer: 4, sub: 2, w: 110, h: 28 }
+    ],
+    rels: [
+      { from: 'u1', to: 's1', type: '触发' },
+      { from: 's1', to: 'm1', type: '导致' }, { from: 's1', to: 'm2', type: '导致' }, { from: 's1', to: 'm3', type: '导致' },
+      { from: 'm1', to: 'c1', type: '由...导致' }, { from: 'm2', to: 'c2', type: '由...导致' }, { from: 'm3', to: 'c3', type: '由...导致' },
+      { from: 'c1', to: 'r1', type: '解决' }, { from: 'c1', to: 'r2', type: '解决' },
+      { from: 'c2', to: 'r3', type: '解决' }, { from: 'c2', to: 'r4', type: '解决' },
+      { from: 'c3', to: 'r5', type: '解决' }, { from: 'c3', to: 'r6', type: '解决' }
+    ]
+  },
+  'A磨煤机': {
+    title: 'A磨煤机振动幅值超标',
+    nodes: [
+      { id: 'u1', label: 'A磨煤机振动>4.7mm/s', type: 'user', layer: 0, sub: 0, w: 220, h: 36 },
+      { id: 's1', label: 'A磨煤机', type: 'symptom', layer: 1, sub: 0, w: 100, h: 32 },
+      { id: 'm1', label: '磨辊磨损', type: 'middle', layer: 2, sub: 0, w: 100, h: 32 },
+      { id: 'm2', label: '煤质硬度偏高', type: 'middle', layer: 2, sub: 1, w: 120, h: 32 },
+      { id: 'm3', label: '基础松动', type: 'middle', layer: 2, sub: 2, w: 100, h: 32 },
+      { id: 'c1', label: '磨辊磨损', type: 'cause', layer: 3, sub: 0, w: 100, h: 40, pct: 92 },
+      { id: 'c2', label: '煤质变差', type: 'cause', layer: 3, sub: 1, w: 100, h: 40, pct: 83 },
+      { id: 'c3', label: '地脚螺栓松动', type: 'cause', layer: 3, sub: 2, w: 130, h: 40, pct: 65 },
+      { id: 'r1', label: '更换磨辊 100%', type: 'solution', layer: 4, sub: 0, w: 120, h: 28 },
+      { id: 'r2', label: '调整给煤量 100%', type: 'solution', layer: 4, sub: 0, w: 130, h: 28 },
+      { id: 'r3', label: '调整给煤量 100%', type: 'solution', layer: 4, sub: 1, w: 130, h: 28 },
+      { id: 'r4', label: '煤质掺配 100%', type: 'solution', layer: 4, sub: 1, w: 110, h: 28 },
+      { id: 'r5', label: '紧固螺栓 100%', type: 'solution', layer: 4, sub: 2, w: 110, h: 28 },
+      { id: 'r6', label: '重新找正 100%', type: 'solution', layer: 4, sub: 2, w: 110, h: 28 }
+    ],
+    rels: [
+      { from: 'u1', to: 's1', type: '触发' },
+      { from: 's1', to: 'm1', type: '导致' }, { from: 's1', to: 'm2', type: '导致' }, { from: 's1', to: 'm3', type: '导致' },
+      { from: 'm1', to: 'c1', type: '由...导致' }, { from: 'm2', to: 'c2', type: '由...导致' }, { from: 'm3', to: 'c3', type: '由...导致' },
+      { from: 'c1', to: 'r1', type: '解决' }, { from: 'c1', to: 'r2', type: '解决' },
+      { from: 'c2', to: 'r3', type: '解决' }, { from: 'c2', to: 'r4', type: '解决' },
+      { from: 'c3', to: 'r5', type: '解决' }, { from: 'c3', to: 'r6', type: '解决' }
+    ]
+  },
+  '给水泵B': {
+    title: '给水泵B效率下降',
+    nodes: [
+      { id: 'u1', label: '给水泵B效率<85%', type: 'user', layer: 0, sub: 0, w: 220, h: 36 },
+      { id: 's1', label: '给水泵B', type: 'symptom', layer: 1, sub: 0, w: 100, h: 32 },
+      { id: 'm1', label: '叶轮入口气蚀', type: 'middle', layer: 2, sub: 0, w: 120, h: 32 },
+      { id: 'm2', label: '密封环磨损', type: 'middle', layer: 2, sub: 1, w: 120, h: 32 },
+      { id: 'c1', label: '气蚀', type: 'cause', layer: 3, sub: 0, w: 100, h: 40, pct: 88 },
+      { id: 'c2', label: '内泄漏', type: 'cause', layer: 3, sub: 1, w: 100, h: 40, pct: 76 },
+      { id: 'r1', label: '提高入口压力 100%', type: 'solution', layer: 4, sub: 0, w: 130, h: 28 },
+      { id: 'r2', label: '检修叶轮 100%', type: 'solution', layer: 4, sub: 0, w: 110, h: 28 },
+      { id: 'r3', label: '更换密封环 100%', type: 'solution', layer: 4, sub: 1, w: 130, h: 28 }
+    ],
+    rels: [
+      { from: 'u1', to: 's1', type: '触发' },
+      { from: 's1', to: 'm1', type: '导致' }, { from: 's1', to: 'm2', type: '导致' },
+      { from: 'm1', to: 'c1', type: '由...导致' }, { from: 'm2', to: 'c2', type: '由...导致' },
+      { from: 'c1', to: 'r1', type: '解决' }, { from: 'c1', to: 'r2', type: '解决' },
+      { from: 'c2', to: 'r3', type: '解决' }
+    ]
   }
-  const list = map[d.name] || [{ n: '正常运行', c: '#22c55e' }, { n: '状态良好', c: '#22c55e' }]
-  const nodes = [{ name: d.name, c: '#3b82f6' }, ...list]
-  kc.setOption({
-    series: [{
-      type: 'graph', layout: 'force', roam: false,
-      force: { repulsion: 200, edgeLength: 80 },
-      data: nodes.map(n => ({ name: n.n, symbolSize: n.c === '#3b82f6' ? 40 : 26, itemStyle: { color: n.c }, label: { show: true, color: '#e2e8f0', fontSize: 11 } })),
-      links: list.map(n => ({ source: d.name, target: n.n })),
-      lineStyle: { color: '#2a3544', curveness: 0.2 }
-    }]
-  })
 }
 
-watch(did, () => nextTick(initKG))
-onMounted(() => nextTick(initKG))
-onUnmounted(() => kc?.dispose())
+const defaultGraph = (name) => ({
+  title: name + ' 状态评估',
+  nodes: [
+    { id: 'u1', label: name + ' 监测正常', type: 'user', layer: 0, sub: 0, w: 220, h: 36 },
+    { id: 's1', label: name, type: 'symptom', layer: 1, sub: 0, w: 100, h: 32 },
+    { id: 'c1', label: '运行正常', type: 'cause', layer: 3, sub: 0, w: 100, h: 40, pct: 100 },
+    { id: 'r1', label: '继续监控 100%', type: 'solution', layer: 4, sub: 0, w: 120, h: 28 }
+  ],
+  rels: [
+    { from: 'u1', to: 's1', type: '触发' },
+    { from: 's1', to: 'c1', type: '由...导致' },
+    { from: 'c1', to: 'r1', type: '解决' }
+  ]
+})
+
+const currentGraph = computed(() => graphCases[cur.value.name] || defaultGraph(cur.value.name))
+
+const selNodeId = ref(null)
 </script>
 
 <style scoped>
 .cd { background: #111827; border: 0.5px solid #1e293b; border-radius: 10px; padding: 16px; }
 .cd-t { font-size: 13px; font-weight: 500; margin-bottom: 10px; }
 .sect { margin-bottom: 14px; }
-.sect-t { color: #f59e0b; font-weight: 500; margin-bottom: 6px; font-size: 12px; }
 .sect p { font-size: 12px; color: #94a3b8; line-height: 1.8; margin-bottom: 4px; }
 .cause { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-size: 12px; color: #94a3b8; }
 .tg { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
 .tg-w { background: rgba(245,158,11,0.12); color: #f59e0b; }
 .tg-i { background: rgba(59,130,246,0.12); color: #3b82f6; }
 
-/* 两侧固定等高550px */
 .diag-card, .kg-card { height: 550px; overflow: hidden; }
 .diag-card { overflow-y: auto; }
 .kg-card { display: flex; flex-direction: column; }
 .kg-card .cd-t { flex-shrink: 0; }
-.kg-chart { width: 100%; height: 500px; }
+.kg-chart { flex: 1; min-height: 0; }
 
-/* 引用溯源：全宽放在底部 */
 .ref-card { margin-top: 14px; }
 .ref-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px; }
 .ref { background: #0a0e17; padding: 12px; border-radius: 8px; font-size: 12px; color: #94a3b8; border: 0.5px solid #1e293b; }

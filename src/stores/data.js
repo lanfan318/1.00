@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { USE_MOCK, equipmentApi, alarmApi, statsApi, alarmConfigApi, guideApi } from '@/api'
 
 // 中央数据 store - 所有页面共享一个数据源
-// 包含：units 机组 / devices 设备 / alarms 报警 / 关联关系
+// 当 USE_MOCK=true 时用模拟数据，USE_MOCK=false 时调用后端 API
 export const useDataStore = defineStore('data', () => {
   // ============ 机组 ============
   const units = ref([
@@ -287,12 +288,30 @@ export const useDataStore = defineStore('data', () => {
     return { total, l1, l2, l3, unhandled, handled: total - unhandled }
   })
 
+  // ======= API 同步 =======
+  const fetchAll = async () => {
+    if (USE_MOCK) return
+    try {
+      const [equipRes, alarmRes, statsRes] = await Promise.all([
+        equipmentApi.getUnits(),
+        alarmApi.getRealtime({ page: 1, size: 100 }),
+        statsApi.overview('month')
+      ])
+      if (equipRes) units.value = equipRes
+      if (alarmRes?.records) alarms.value = alarmRes.records
+    } catch (e) {
+      console.warn('API 未就绪，使用模拟数据', e.message)
+    }
+  }
+
   return {
     units, addUnit, delUnit, selectedUnitId, selectedUnit,
     devices, addDevice, delDevice, updateDeviceParam, unitDevices, deviceById,
     selectedDevice,
     alarms, setAlarmStatus, triggerAlarm, unitAlarms, stats,
     alarmRules, addRule, delRule, channels, alarmLevels,
-    kgData, kgRelations
+    kgData, kgRelations,
+    isMock: USE_MOCK,
+    fetchAll
   }
 })

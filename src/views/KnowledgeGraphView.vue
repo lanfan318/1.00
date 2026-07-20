@@ -3,57 +3,64 @@
   <el-row :gutter="14">
     <el-col :span="5">
       <div class="cd" style="height:600px;display:flex;flex-direction:column">
-        <div class="cd-t">图谱分类</div>
+        <div class="cd-t">推理图分类</div>
         <el-menu :default-active="cat" @select="onSelect" class="kg-menu">
-          <el-menu-item index="all">全部图谱（综合）</el-menu-item>
-          <el-menu-item index="锅炉故障">锅炉故障</el-menu-item>
-          <el-menu-item index="汽轮机故障">汽轮机故障</el-menu-item>
-          <el-menu-item index="辅机故障">辅机故障</el-menu-item>
-          <el-menu-item index="火警关联">火警关联</el-menu-item>
+          <el-menu-item index="推理案例1">给水泵油压异常</el-menu-item>
+          <el-menu-item index="推理案例2">引风机轴承温度高</el-menu-item>
+          <el-menu-item index="推理案例3">磨煤机振动超标</el-menu-item>
+          <el-menu-item index="推理案例4">主汽温度偏高</el-menu-item>
         </el-menu>
         <div style="margin-top:14px;padding-top:14px;border-top:0.5px solid #1e293b">
-          <div class="cd-t" style="margin-bottom:8px">实体统计</div>
-          <div class="st-row"><span>设备</span><strong style="color:#3b82f6">{{ stats.设备 }}</strong></div>
-          <div class="st-row"><span>故障</span><strong style="color:#ef4444">{{ stats.故障 }}</strong></div>
-          <div class="st-row"><span>原因</span><strong style="color:#f59e0b">{{ stats.原因 }}</strong></div>
-          <div class="st-row"><span>方案</span><strong style="color:#22c55e">{{ stats.方案 }}</strong></div>
+          <div class="cd-t" style="margin-bottom:8px">推理统计</div>
+          <div class="st-row"><span>用户问题</span><strong style="color:#8b5cf6">{{ stats.user }}</strong></div>
+          <div class="st-row"><span>症状</span><strong style="color:#f59e0b">{{ stats.symptom }}</strong></div>
+          <div class="st-row"><span>中间现象</span><strong style="color:#fbbf24">{{ stats.middle }}</strong></div>
+          <div class="st-row"><span>根本原因</span><strong style="color:#ef4444">{{ stats.cause }}</strong></div>
+          <div class="st-row"><span>解决方案</span><strong style="color:#22c55e">{{ stats.solution }}</strong></div>
         </div>
       </div>
     </el-col>
     <el-col :span="19">
-      <div class="cd" style="height:600px">
+      <div class="cd" style="height:600px;display:flex;flex-direction:column">
         <div class="kg-toolbar">
-          <el-input v-model="kw" placeholder="搜索实体名称（如 A引风机、轴承温度高、磨辊磨损）" clearable @input="onSearch" style="flex:1" />
-          <span class="kg-info" v-if="kw">搜索 " <strong style="color:#3b82f6">{{ kw }}</strong> " 结果：<strong style="color:#22c55e">{{ matchNodes.length }}</strong> 个实体</span>
+          <span style="font-size:13px;color:#e2e8f0;font-weight:500">知识图谱推理</span>
+          <el-button-group>
+            <el-button :type="cat==='推理案例1'?'primary':''" size="small" @click="onSelect('推理案例1')">给水泵油压</el-button>
+            <el-button :type="cat==='推理案例2'?'primary':''" size="small" @click="onSelect('推理案例2')">引风机轴承</el-button>
+            <el-button :type="cat==='推理案例3'?'primary':''" size="small" @click="onSelect('推理案例3')">磨煤机振动</el-button>
+            <el-button :type="cat==='推理案例4'?'primary':''" size="small" @click="onSelect('推理案例4')">主汽温度</el-button>
+          </el-button-group>
         </div>
-        <div ref="kg" style="height:520px"></div>
+        <div class="kg-canvas">
+          <ReasoningGraph :case-data="cases[cat]" :selected-id="selectedId" @update:selected-id="val => selectedId = val" @select="onNodeSel" />
+        </div>
       </div>
     </el-col>
   </el-row>
 
   <div class="cd" style="margin-top:14px">
-    <div class="cd-t">实体详情</div>
+    <div class="cd-t">推理详情</div>
     <div v-if="selected">
       <el-row :gutter="14">
-        <el-col :span="6"><div class="dt-card"><div class="dt-l">名称</div><div class="dt-v">{{ selected.n }}</div></div></el-col>
-        <el-col :span="6"><div class="dt-card"><div class="dt-l">类型</div><div class="dt-v" :style="{color:selected.c}">{{ selectedType }}</div></div></el-col>
-        <el-col :span="6"><div class="dt-card"><div class="dt-l">关联关系</div><div class="dt-v">{{ relationsOf(selected.n).length }} 条</div></div></el-col>
+        <el-col :span="6"><div class="dt-card"><div class="dt-l">节点</div><div class="dt-v">{{ selected.label }}</div></div></el-col>
+        <el-col :span="6"><div class="dt-card"><div class="dt-l">类型</div><div class="dt-v" :style="{color: COL[selected.type]?.color}">{{ typeName(selected.type) }}</div></div></el-col>
+        <el-col :span="6"><div class="dt-card"><div class="dt-l">关联关系</div><div class="dt-v">{{ relationsOf(selected.id).length }} 条</div></div></el-col>
         <el-col :span="6">
           <div class="dt-card">
             <div class="dt-l">操作</div>
             <div class="dt-v">
-              <el-button v-if="selected.did" link type="primary" size="small" @click="goDevice">查看设备详情</el-button>
-              <el-button link type="primary" size="small" @click="goAnalysis">查看工况分析</el-button>
+              <el-button link type="primary" size="small" @click="goDiagnosis">查看诊断</el-button>
+              <el-button link type="primary" size="small" @click="goCondition">工况分析</el-button>
             </div>
           </div>
         </el-col>
       </el-row>
-      <div v-if="relationsOf(selected.n).length" style="margin-top:12px">
+      <div v-if="relationsOf(selected.id).length" style="margin-top:12px">
         <div class="dt-rels">
-          <div v-for="(r, i) in relationsOf(selected.n)" :key="i" class="dt-rel">
-            <span class="dt-rel-from">{{ r.from }}</span>
-            <span class="dt-rel-arrow">→ {{ r.type }}</span>
-            <span class="dt-rel-to">{{ r.to }}</span>
+          <div v-for="(r, i) in relationsOf(selected.id)" :key="i" class="dt-rel">
+            <span class="dt-rel-from" :style="{color: r.fromColor}">{{ r.from }}</span>
+            <span class="dt-rel-arrow">{{ r.type }}</span>
+            <span class="dt-rel-to" :style="{color: r.toColor}">{{ r.to }}</span>
           </div>
         </div>
       </div>
@@ -64,130 +71,183 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import * as echarts from 'echarts'
-import { useDataStore } from '@/stores/data'
+import ReasoningGraph from '@/components/ReasoningGraph.vue'
 
-const store = useDataStore()
 const router = useRouter()
-const cat = ref('all')
-const kw = ref('')
-const kg = ref(null)
-const matchNodes = ref([])
-const selected = ref(null)
-let chart
+const cat = ref('推理案例1')
+const selectedId = ref(null)
 
-const currentRelations = computed(() => {
-  if (cat.value === 'all') {
-    // 全部图谱：合并所有分类的关系
-    return Object.values(store.kgRelations).flat()
+const COL = {
+  user: { color: '#6d28d9' }, symptom: { color: '#b45309' },
+  middle: { color: '#854d0e' }, cause: { color: '#b91c1c' }, solution: { color: '#15803d' }
+}
+
+// 4 个推理案例（与 ReasoningGraph 组件共享）
+const cases = {
+  '推理案例1': {
+    title: '给水泵A#1给油压力小于5.5',
+    nodes: [
+      { id: 'u1', label: '给水泵A#1给油压力小于5.5', type: 'user', layer: 0, sub: 0, w: 230, h: 36 },
+      { id: 's1', label: '给水泵', type: 'symptom', layer: 1, sub: 0, w: 100, h: 32 },
+      { id: 'm1', label: '清理泵进口滤网', type: 'middle', layer: 2, sub: 0, w: 130, h: 32 },
+      { id: 'm2', label: '摩擦增大', type: 'middle', layer: 2, sub: 1, w: 100, h: 32 },
+      { id: 'm3', label: '预测模型未考虑驱动端特性', type: 'middle', layer: 2, sub: 2, w: 200, h: 32 },
+      { id: 'c1', label: '清理泵进口滤网', type: 'cause', layer: 3, sub: 0, w: 130, h: 40, pct: 95 },
+      { id: 'c2', label: '摩擦增大', type: 'cause', layer: 3, sub: 1, w: 100, h: 40, pct: 95 },
+      { id: 'c3', label: '预测模型未考虑驱动端...', type: 'cause', layer: 3, sub: 2, w: 200, h: 40, pct: 95 },
+      { id: 'r1', label: '压力 100%', type: 'solution', layer: 4, sub: 0, w: 90, h: 28 },
+      { id: 'r2', label: '油温 100%', type: 'solution', layer: 4, sub: 0, w: 90, h: 28 },
+      { id: 'r3', label: '流量 100%', type: 'solution', layer: 4, sub: 0, w: 90, h: 28 },
+      { id: 'r4', label: '压力 100%', type: 'solution', layer: 4, sub: 1, w: 90, h: 28 },
+      { id: 'r5', label: '油温 100%', type: 'solution', layer: 4, sub: 1, w: 90, h: 28 },
+      { id: 'r6', label: '流量 100%', type: 'solution', layer: 4, sub: 1, w: 90, h: 28 },
+      { id: 'r7', label: '压力 100%', type: 'solution', layer: 4, sub: 2, w: 90, h: 28 },
+      { id: 'r8', label: '油温 100%', type: 'solution', layer: 4, sub: 2, w: 90, h: 28 },
+      { id: 'r9', label: '流量 100%', type: 'solution', layer: 4, sub: 2, w: 90, h: 28 }
+    ],
+    rels: [
+      { from: 'u1', to: 's1', type: '触发' },
+      { from: 's1', to: 'm1', type: '导致' }, { from: 's1', to: 'm2', type: '导致' }, { from: 's1', to: 'm3', type: '导致' },
+      { from: 'm1', to: 'c1', type: '由...导致' }, { from: 'm2', to: 'c2', type: '由...导致' }, { from: 'm3', to: 'c3', type: '由...导致' },
+      { from: 'c1', to: 'r1', type: '解决' }, { from: 'c1', to: 'r2', type: '解决' }, { from: 'c1', to: 'r3', type: '解决' },
+      { from: 'c2', to: 'r4', type: '解决' }, { from: 'c2', to: 'r5', type: '解决' }, { from: 'c2', to: 'r6', type: '解决' },
+      { from: 'c3', to: 'r7', type: '解决' }, { from: 'c3', to: 'r8', type: '解决' }, { from: 'c3', to: 'r9', type: '解决' }
+    ]
+  },
+  '推理案例2': {
+    title: 'A引风机轴承温度异常升高',
+    nodes: [
+      { id: 'u1', label: 'A引风机轴承温度>82℃', type: 'user', layer: 0, sub: 0, w: 220, h: 36 },
+      { id: 's1', label: 'A引风机轴承', type: 'symptom', layer: 1, sub: 0, w: 120, h: 32 },
+      { id: 'm1', label: '润滑油脂劣化', type: 'middle', layer: 2, sub: 0, w: 110, h: 32 },
+      { id: 'm2', label: '冷却水管路堵塞', type: 'middle', layer: 2, sub: 1, w: 130, h: 32 },
+      { id: 'm3', label: '轴向载荷异常', type: 'middle', layer: 2, sub: 2, w: 120, h: 32 },
+      { id: 'c1', label: '润滑失效', type: 'cause', layer: 3, sub: 0, w: 100, h: 40, pct: 88 },
+      { id: 'c2', label: '冷却不足', type: 'cause', layer: 3, sub: 1, w: 100, h: 40, pct: 76 },
+      { id: 'c3', label: '叶轮积灰失衡', type: 'cause', layer: 3, sub: 2, w: 120, h: 40, pct: 65 },
+      { id: 'r1', label: '更换油脂 100%', type: 'solution', layer: 4, sub: 0, w: 110, h: 28 },
+      { id: 'r2', label: '清洗滤网 100%', type: 'solution', layer: 4, sub: 0, w: 110, h: 28 },
+      { id: 'r3', label: '检修冷却器 100%', type: 'solution', layer: 4, sub: 1, w: 120, h: 28 },
+      { id: 'r4', label: '清理管路 100%', type: 'solution', layer: 4, sub: 1, w: 110, h: 28 },
+      { id: 'r5', label: '动平衡校正 100%', type: 'solution', layer: 4, sub: 2, w: 120, h: 28 },
+      { id: 'r6', label: '检查叶轮 100%', type: 'solution', layer: 4, sub: 2, w: 110, h: 28 }
+    ],
+    rels: [
+      { from: 'u1', to: 's1', type: '触发' },
+      { from: 's1', to: 'm1', type: '导致' }, { from: 's1', to: 'm2', type: '导致' }, { from: 's1', to: 'm3', type: '导致' },
+      { from: 'm1', to: 'c1', type: '由...导致' }, { from: 'm2', to: 'c2', type: '由...导致' }, { from: 'm3', to: 'c3', type: '由...导致' },
+      { from: 'c1', to: 'r1', type: '解决' }, { from: 'c1', to: 'r2', type: '解决' },
+      { from: 'c2', to: 'r3', type: '解决' }, { from: 'c2', to: 'r4', type: '解决' },
+      { from: 'c3', to: 'r5', type: '解决' }, { from: 'c3', to: 'r6', type: '解决' }
+    ]
+  },
+  '推理案例3': {
+    title: 'A磨煤机振动幅值超标',
+    nodes: [
+      { id: 'u1', label: 'A磨煤机振动>4.7mm/s', type: 'user', layer: 0, sub: 0, w: 220, h: 36 },
+      { id: 's1', label: 'A磨煤机', type: 'symptom', layer: 1, sub: 0, w: 100, h: 32 },
+      { id: 'm1', label: '磨辊磨损', type: 'middle', layer: 2, sub: 0, w: 100, h: 32 },
+      { id: 'm2', label: '煤质硬度偏高', type: 'middle', layer: 2, sub: 1, w: 120, h: 32 },
+      { id: 'm3', label: '基础松动', type: 'middle', layer: 2, sub: 2, w: 100, h: 32 },
+      { id: 'c1', label: '磨辊磨损', type: 'cause', layer: 3, sub: 0, w: 100, h: 40, pct: 92 },
+      { id: 'c2', label: '煤质变差', type: 'cause', layer: 3, sub: 1, w: 100, h: 40, pct: 81 },
+      { id: 'c3', label: '地脚螺栓松动', type: 'cause', layer: 3, sub: 2, w: 130, h: 40, pct: 58 },
+      { id: 'r1', label: '更换磨辊 100%', type: 'solution', layer: 4, sub: 0, w: 120, h: 28 },
+      { id: 'r2', label: '调整给煤量 100%', type: 'solution', layer: 4, sub: 0, w: 130, h: 28 },
+      { id: 'r3', label: '调整给煤量 100%', type: 'solution', layer: 4, sub: 1, w: 130, h: 28 },
+      { id: 'r4', label: '煤质掺配 100%', type: 'solution', layer: 4, sub: 1, w: 110, h: 28 },
+      { id: 'r5', label: '紧固螺栓 100%', type: 'solution', layer: 4, sub: 2, w: 110, h: 28 },
+      { id: 'r6', label: '重新找正 100%', type: 'solution', layer: 4, sub: 2, w: 110, h: 28 }
+    ],
+    rels: [
+      { from: 'u1', to: 's1', type: '触发' },
+      { from: 's1', to: 'm1', type: '导致' }, { from: 's1', to: 'm2', type: '导致' }, { from: 's1', to: 'm3', type: '导致' },
+      { from: 'm1', to: 'c1', type: '由...导致' }, { from: 'm2', to: 'c2', type: '由...导致' }, { from: 'm3', to: 'c3', type: '由...导致' },
+      { from: 'c1', to: 'r1', type: '解决' }, { from: 'c1', to: 'r2', type: '解决' },
+      { from: 'c2', to: 'r3', type: '解决' }, { from: 'c2', to: 'r4', type: '解决' },
+      { from: 'c3', to: 'r5', type: '解决' }, { from: 'c3', to: 'r6', type: '解决' }
+    ]
+  },
+  '推理案例4': {
+    title: '锅炉主汽温度偏高',
+    nodes: [
+      { id: 'u1', label: '锅炉主汽温度>552℃', type: 'user', layer: 0, sub: 0, w: 220, h: 36 },
+      { id: 's1', label: '锅炉主汽', type: 'symptom', layer: 1, sub: 0, w: 100, h: 32 },
+      { id: 'm1', label: '减温水量不足', type: 'middle', layer: 2, sub: 0, w: 120, h: 32 },
+      { id: 'm2', label: '燃料量过大', type: 'middle', layer: 2, sub: 1, w: 100, h: 32 },
+      { id: 'm3', label: '给水温度偏低', type: 'middle', layer: 2, sub: 2, w: 120, h: 32 },
+      { id: 'c1', label: '减温水调节阀卡涩', type: 'cause', layer: 3, sub: 0, w: 150, h: 40, pct: 84 },
+      { id: 'c2', label: '给煤量异常', type: 'cause', layer: 3, sub: 1, w: 120, h: 40, pct: 72 },
+      { id: 'c3', label: '高加端差大', type: 'cause', layer: 3, sub: 2, w: 120, h: 40, pct: 68 },
+      { id: 'r1', label: '检修调节阀 100%', type: 'solution', layer: 4, sub: 0, w: 130, h: 28 },
+      { id: 'r2', label: '加大减温水 100%', type: 'solution', layer: 4, sub: 0, w: 130, h: 28 },
+      { id: 'r3', label: '调整给煤量 100%', type: 'solution', layer: 4, sub: 1, w: 130, h: 28 },
+      { id: 'r4', label: '降低燃料率 100%', type: 'solution', layer: 4, sub: 1, w: 130, h: 28 },
+      { id: 'r5', label: '清理高加 100%', type: 'solution', layer: 4, sub: 2, w: 120, h: 28 },
+      { id: 'r6', label: '提高给水温度 100%', type: 'solution', layer: 4, sub: 2, w: 140, h: 28 }
+    ],
+    rels: [
+      { from: 'u1', to: 's1', type: '触发' },
+      { from: 's1', to: 'm1', type: '导致' }, { from: 's1', to: 'm2', type: '导致' }, { from: 's1', to: 'm3', type: '导致' },
+      { from: 'm1', to: 'c1', type: '由...导致' }, { from: 'm2', to: 'c2', type: '由...导致' }, { from: 'm3', to: 'c3', type: '由...导致' },
+      { from: 'c1', to: 'r1', type: '解决' }, { from: 'c1', to: 'r2', type: '解决' },
+      { from: 'c2', to: 'r3', type: '解决' }, { from: 'c2', to: 'r4', type: '解决' },
+      { from: 'c3', to: 'r5', type: '解决' }, { from: 'c3', to: 'r6', type: '解决' }
+    ]
   }
-  return store.kgRelations[cat.value] || []
-})
+}
 
-const currentNodes = computed(() => {
-  const allNodes = []
-  const seen = new Set()
-  const rels = currentRelations.value
-
-  // 设备节点（从 store.kgData 取）
-  store.kgData.设备.forEach(d => {
-    if (!seen.has(d.name)) { allNodes.push({ name: d.name, c: d.c, category: '设备', did: d.deviceId }); seen.add(d.name) }
-  })
-  // 故障/原因/方案节点
-  ;['故障', '原因', '方案'].forEach(cat => {
-    store.kgData[cat].forEach(n => {
-      if (!seen.has(n.name)) { allNodes.push({ name: n.name, c: n.c, category: cat }); seen.add(n.name) }
-    })
-  })
-  // 只保留在关系中出现的节点
-  const relNodes = new Set()
-  rels.forEach(r => { relNodes.add(r.from); relNodes.add(r.to) })
-  return allNodes.filter(n => relNodes.has(n.name))
+const selected = computed(() => {
+  if (!selectedId.value) return null
+  const data = cases[cat.value]
+  return data?.nodes.find(n => n.id === selectedId.value) || null
 })
 
 const stats = computed(() => {
-  const nodes = currentNodes.value
-  return {
-    '设备': nodes.filter(n => n.category === '设备').length,
-    '故障': nodes.filter(n => n.category === '故障').length,
-    '原因': nodes.filter(n => n.category === '原因').length,
-    '方案': nodes.filter(n => n.category === '方案').length
-  }
+  const data = cases[cat.value]
+  if (!data) return { user: 0, symptom: 0, middle: 0, cause: 0, solution: 0 }
+  const c = { user: 0, symptom: 0, middle: 0, cause: 0, solution: 0 }
+  data.nodes.forEach(n => { c[n.type] = (c[n.type] || 0) + 1 })
+  return c
 })
 
-const selectedType = computed(() => selected.value ? ({
-  '#3b82f6': '设备', '#ef4444': '故障', '#f59e0b': '原因', '#22c55e': '方案'
-}[selected.value.c] || '未知') : '')
+const onNodeSel = (n) => { selectedId.value = n.id }
 
-const relationsOf = (name) => {
-  return currentRelations.value.filter(r => r.from === name || r.to === name).map(r => ({
-    from: r.from, to: r.to, type: r.from === name ? '导致' : '由...导致'
-  }))
-}
+const typeName = (t) => ({ user: '用户问题', symptom: '症状', middle: '中间现象', cause: '根本原因', solution: '解决方案' }[t] || '未知')
 
-const initChart = () => {
-  if (chart) chart.dispose()
-  chart = echarts.init(kg.value)
-  const nodes = currentNodes.value
-  const rels = currentRelations.value
-
-  // 标记搜索匹配的节点
-  const matched = matchNodes.value.length > 0 ? new Set(matchNodes.value.map(n => n.name)) : null
-
-  chart.setOption({
-    tooltip: { formatter: (p) => `<b>${p.data.name}</b><br/>${p.data.category || ''}` },
-    series: [{
-      type: 'graph', layout: 'force', roam: true,
-      force: { repulsion: 280, edgeLength: 90, gravity: 0.05 },
-      label: { show: true, color: '#e2e8f0', fontSize: 11, position: 'right' },
-      data: nodes.map(n => ({
-        name: n.name, symbolSize: matched && matched.has(n.name) ? 50 : (n.category === '设备' ? 40 : n.category === '故障' ? 30 : 22),
-        itemStyle: { color: matched && matched.has(n.name) ? '#fbbf24' : n.c, borderColor: matched && matched.has(n.name) ? '#f59e0b' : 'transparent', borderWidth: matched ? 3 : 0 },
-        category: n.category,
-        did: n.did
-      })),
-      links: rels.map(r => ({ source: r.from, target: r.to, lineStyle: { color: '#2a3544', curveness: 0.1, width: 1.5 } })),
-      categories: [{ name: '设备', itemStyle: { color: '#3b82f6' } }, { name: '故障', itemStyle: { color: '#ef4444' } }, { name: '原因', itemStyle: { color: '#f59e0b' } }, { name: '方案', itemStyle: { color: '#22c55e' } }],
-      emphasis: { focus: 'adjacency', label: { fontSize: 13 } }
-    }]
-  })
-
-  // 节点点击事件
-  chart.on('click', (params) => {
-    if (params.data) {
-      selected.value = nodes.find(n => n.name === params.data.name) || null
+const relationsOf = (id) => {
+  const data = cases[cat.value]
+  if (!data) return []
+  return data.rels.filter(r => r.from === id || r.to === id).map(r => {
+    const a = data.nodes.find(n => n.id === r.from)
+    const b = data.nodes.find(n => n.id === r.to)
+    return {
+      from: a?.label, to: b?.label, type: r.type,
+      fromColor: COL[a?.type]?.color, toColor: COL[b?.type]?.color
     }
   })
 }
 
-const onSelect = (idx) => { cat.value = idx; selected.value = null }
-const onSearch = (val) => {
-  if (!val) { matchNodes.value = []; return }
-  matchNodes.value = currentNodes.value.filter(n => n.name.toLowerCase().includes(val.toLowerCase()))
-}
-const goDevice = () => { if (selected.value?.did) { store.selectedDevice = selected.value.did; router.push('/devices') } }
-const goAnalysis = () => { if (selected.value?.did) { store.selectedDevice = selected.value.did; router.push('/condition') } }
-
-watch([cat, currentNodes, currentRelations, matchNodes], () => nextTick(initChart), { deep: true })
-onMounted(() => nextTick(initChart))
-onUnmounted(() => chart?.dispose())
+const onSelect = (idx) => { cat.value = idx; selectedId.value = null }
+const goDiagnosis = () => router.push('/diagnosis')
+const goCondition = () => router.push('/condition')
 </script>
 
 <style scoped>
 .cd { background: #111827; border: 0.5px solid #1e293b; border-radius: 10px; padding: 16px; }
 .cd-t { font-size: 13px; color: #94a3b8; margin-bottom: 10px; font-weight: 500; }
 .kg-menu { border: none; background: transparent; }
-.kg-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-.kg-info { font-size: 12px; color: #94a3b8; }
+.kg-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
+.kg-canvas { flex: 1; min-height: 0; }
 .st-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; color: #94a3b8; }
 .dt-card { background: #0a0e17; padding: 12px; border-radius: 6px; }
 .dt-l { font-size: 11px; color: #94a3b8; margin-bottom: 4px; }
 .dt-v { font-size: 14px; color: #e2e8f0; font-weight: 500; }
 .dt-rels { background: #0a0e17; border-radius: 6px; padding: 10px; max-height: 200px; overflow-y: auto; }
 .dt-rel { display: flex; align-items: center; gap: 10px; padding: 6px 10px; font-size: 12px; color: #94a3b8; border-bottom: 0.5px solid #1e293b; }
-.dt-rel-from, .dt-rel-to { color: #e2e8f0; font-weight: 500; }
-.dt-rel-arrow { color: #3b82f6; font-size: 11px; }
+.dt-rel-from, .dt-rel-to { font-weight: 500; }
+.dt-rel-arrow { color: #64748b; font-size: 11px; }
 .empty-hint { text-align: center; padding: 40px; color: #64748b; }
 </style>
