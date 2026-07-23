@@ -10,13 +10,13 @@
           <el-menu-item index="推理案例3">磨煤机振动超标</el-menu-item>
           <el-menu-item index="推理案例4">主汽温度偏高</el-menu-item>
         </el-menu>
-        <div style="margin-top:14px;padding-top:14px;border-top:0.5px solid #1e293b">
+        <div style="margin-top:14px;padding-top:14px;border-top:0.5px solid rgba(62,170,255,0.12)">
           <div class="cd-t" style="margin-bottom:8px">推理统计</div>
           <div class="st-row"><span>用户问题</span><strong style="color:#8b5cf6">{{ stats.user }}</strong></div>
-          <div class="st-row"><span>症状</span><strong style="color:#f59e0b">{{ stats.symptom }}</strong></div>
+          <div class="st-row"><span>症状</span><strong style="color:#fbbf24">{{ stats.symptom }}</strong></div>
           <div class="st-row"><span>中间现象</span><strong style="color:#fbbf24">{{ stats.middle }}</strong></div>
           <div class="st-row"><span>根本原因</span><strong style="color:#ef4444">{{ stats.cause }}</strong></div>
-          <div class="st-row"><span>解决方案</span><strong style="color:#22c55e">{{ stats.solution }}</strong></div>
+          <div class="st-row"><span>解决方案</span><strong style="color:#34d399">{{ stats.solution }}</strong></div>
         </div>
       </div>
     </el-col>
@@ -236,18 +236,18 @@ const goCondition = () => router.push('/condition')
 </script>
 
 <style scoped>
-.cd { background: #111827; border: 0.5px solid #1e293b; border-radius: 10px; padding: 16px; }
-.cd-t { font-size: 13px; color: #94a3b8; margin-bottom: 10px; font-weight: 500; }
+.cd { background: #111827; border: 0.5px solid rgba(62,170,255,0.12); border-radius: 10px; padding: 16px; }
+.cd-t { font-size: 13px; color: #8fb0cf; margin-bottom: 10px; font-weight: 500; }
 .kg-menu { border: none; background: transparent; }
 .kg-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
 .kg-canvas { flex: 1; min-height: 0; }
-.st-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; color: #94a3b8; }
-.dt-card { background: #0a0e17; padding: 12px; border-radius: 6px; }
-.dt-l { font-size: 11px; color: #94a3b8; margin-bottom: 4px; }
+.st-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; color: #8fb0cf; }
+.dt-card { background: #061224; padding: 12px; border-radius: 6px; }
+.dt-l { font-size: 11px; color: #8fb0cf; margin-bottom: 4px; }
 .dt-v { font-size: 14px; color: #e2e8f0; font-weight: 500; }
-.dt-rels { background: #0a0e17; border-radius: 6px; padding: 10px; max-height: 200px; overflow-y: auto; }
-.dt-rel { display: flex; align-items: center; gap: 10px; padding: 6px 10px; font-size: 12px; color: #94a3b8; border-bottom: 0.5px solid #1e293b; }
+.dt-rels { background: #061224; border-radius: 6px; padding: 10px; max-height: 200px; overflow-y: auto; }
+.dt-rel { display: flex; align-items: center; gap: 10px; padding: 6px 10px; font-size: 12px; color: #8fb0cf; border-bottom: 0.5px solid rgba(62,170,255,0.12); }
 .dt-rel-from, .dt-rel-to { font-weight: 500; }
-.dt-rel-arrow { color: #64748b; font-size: 11px; }
-.empty-hint { text-align: center; padding: 40px; color: #64748b; }
+.dt-rel-arrow { color: #8fb0cf; font-size: 11px; }
+.empty-hint { text-align: center; padding: 40px; color: #8fb0cf; }
 </style>

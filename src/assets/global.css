@@ -1,0 +1,220 @@
+/* =====================================================
+   HiFire Agent — 专业工业数据平台设计系统 v2
+   特性: Glass-morphism, 多层阴影景深, 3D 渐变更显品质
+   ===================================================== */
+
+/* ============ 全局背景 — 多层径向光建立景深 ============ */
+body, #app {
+  background:
+    radial-gradient(ellipse 1400px 650px at 25% 0%, rgba(18, 60, 110, 0.14), transparent 65%),
+    radial-gradient(ellipse 1000px 550px at 75% 95%, rgba(12, 80, 140, 0.09), transparent 55%),
+    radial-gradient(ellipse 600px 400px at 50% 55%, rgba(8, 40, 80, 0.05), transparent 60%),
+    linear-gradient(180deg, #040810 0%, #070f1e 40%, #050c1a 100%) !important;
+  color: #c0d4e8 !important;
+  min-height: 100vh;
+}
+
+/* ============ 卡片 — Glass morphism 多层景深面板 ============ */
+.cd, [class*="cd-"], .cd-panel {
+  position: relative !important;
+  background:
+    linear-gradient(135deg, rgba(12, 30, 52, 0.65) 0%, rgba(8, 20, 38, 0.7) 100%) !important;
+  border: 1px solid rgba(62, 170, 255, 0.15) !important;
+  border-radius: 6px !important;
+  padding: 16px !important;
+  /* 多层阴影建立景深: 底部深影 + 中距投射 + 近距边缘光 */
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    0 4px 16px rgba(0, 10, 30, 0.4),
+    0 8px 32px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(62, 170, 255, 0.06) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+.cd:hover, [class*="cd-"]:hover {
+  border-color: rgba(62, 170, 255, 0.25) !important;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.3),
+    0 6px 24px rgba(0, 15, 40, 0.45),
+    0 12px 40px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(62, 170, 255, 0.1) !important;
+  transform: translateY(-1px);
+}
+
+/* 四角 bracket — 保留但更精致 */
+.cd::before, .cd::after, [class*="cd-"]::before, [class*="cd-"]::after,
+.cd-panel::before, .cd-panel::after {
+  content: ''; position: absolute; width: 10px; height: 10px;
+  border: 1.5px solid rgba(62, 170, 255, 0.5); pointer-events: none; z-index: 2;
+}
+.cd::before, [class*="cd-"]::before, .cd-panel::before {
+  top: -1px; left: -1px; border-right: none; border-bottom: none;
+  box-shadow: -1px -1px 4px rgba(62,170,255,0.25);
+}
+.cd::after, [class*="cd-"]::after, .cd-panel::after {
+  bottom: -1px; right: -1px; border-left: none; border-top: none;
+  box-shadow: 1px 1px 4px rgba(62,170,255,0.25);
+}
+
+/* ============ 标题栏 — Glass + ▶ 指示器 ============ */
+.cd-t, .cd-h, .cc-title, .cc-h, h1.page-title {
+  position: relative !important;
+  display: flex !important; align-items: center !important;
+  gap: 10px !important;
+  padding: 10px 16px 10px 18px !important;
+  margin: -8px -8px 12px -8px !important;
+  background: linear-gradient(90deg, rgba(62, 170, 255, 0.12), rgba(62, 170, 255, 0.02)) !important;
+  border-left: 4px solid #3eaaff !important;
+  border-bottom: 1px solid rgba(62, 170, 255, 0.08) !important;
+  font-size: 14px !important; font-weight: 600 !important;
+  color: #d4ecff !important;
+  letter-spacing: 0.5px !important;
+  min-height: 36px;
+  box-shadow: -6px 0 16px -4px rgba(62,170,255,0.12);
+}
+.cd-t::before, .cd-h::before, .cc-title::before, .cc-h::before {
+  content: '' !important;
+  width: 0 !important; height: 0 !important;
+  border-left: 9px solid #3eaaff !important;
+  border-top: 6px solid transparent !important;
+  border-bottom: 6px solid transparent !important;
+  filter: drop-shadow(0 0 5px rgba(62, 170, 255, 0.6)) !important;
+  flex-shrink: 0 !important;
+}
+.cd-t::after, .cd-h::after, .cc-title::after, .cc-h::after {
+  content: '' !important;
+  margin-left: auto !important;
+  width: 50px !important; height: 6px !important;
+  background: repeating-linear-gradient(90deg, #3eaaff 0 4px, transparent 4px 6px) !important;
+  opacity: 0.7 !important;
+  flex-shrink: 0 !important;
+}
+
+/* ============ KPI 卡片 — 哑光玻璃面板 ============ */
+.kpi, .kpi-card, .met-card, .stat-card {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 14px 8px 10px !important;
+  background:
+    linear-gradient(180deg, rgba(10, 24, 42, 0.55), rgba(6, 16, 30, 0.6)) !important;
+  border: 1px solid rgba(62, 170, 255, 0.13) !important;
+  border-radius: 6px !important;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    0 4px 12px rgba(0, 10, 25, 0.35) !important;
+  transition: all 0.25s !important;
+  overflow: hidden !important;
+}
+.kpi:hover, .kpi-card:hover, .met-card:hover, .stat-card:hover {
+  border-color: rgba(62, 170, 255, 0.25) !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3), 0 6px 20px rgba(0,15,40,0.4) !important;
+  transform: translateY(-1px);
+}
+.kpi-l, .kpi-label, .kpi-key, .kpi-s {
+  font-size: 11px !important; color: #7a9cc0 !important;
+  letter-spacing: 0.5px !important; font-weight: 500 !important;
+}
+.kpi-v, .kpi-val, .kpi-value {
+  font-size: 24px !important; font-weight: 700 !important;
+  font-family: "SF Mono", "Consolas", monospace !important;
+  line-height: 1.1 !important; color: #d4ecff !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+.kpi-s { font-size: 10px !important; opacity: 0.85; }
+
+/* ============ 表格 ============ */
+.el-table { background: transparent !important; color: #b8cee4; font-size: 13px; }
+.el-table th.el-table__cell {
+  background: linear-gradient(180deg, rgba(10, 24, 45, 0.4), rgba(8, 20, 40, 0.3)) !important;
+  color: #a8c4dc !important; font-weight: 600; font-size: 12px;
+  border-bottom: 1px solid rgba(62, 170, 255, 0.1) !important;
+}
+.el-table td.el-table__cell { border-bottom: 1px solid rgba(62, 170, 255, 0.04) !important; }
+.el-table--enable-row-hover .el-table__body tr:hover > td {
+  background: linear-gradient(90deg, rgba(62, 170, 255, 0.04), transparent) !important;
+}
+.el-table__empty-text { color: #5a7894; }
+
+/* 分页 */
+.el-pagination { --el-pagination-bg-color: transparent; --el-pagination-text-color: #7a9cc0; }
+.el-pager li {
+  background: rgba(8, 20, 40, 0.5) !important;
+  border: 1px solid rgba(62, 170, 255, 0.1) !important;
+  color: #8ab4d4; border-radius: 4px !important;
+}
+.el-pager li.is-active {
+  background: linear-gradient(135deg, rgba(62, 170, 255, 0.2), rgba(40, 120, 220, 0.15)) !important;
+  color: #a8d4ff !important; border-color: rgba(62, 170, 255, 0.35) !important;
+  box-shadow: 0 0 8px rgba(62, 170, 255, 0.15);
+}
+
+/* ============ 表单输入 — 哑光玻璃 ============ */
+.el-input__wrapper {
+  background: rgba(8, 18, 32, 0.55) !important;
+  border: 1px solid rgba(62, 170, 255, 0.12) !important;
+  border-radius: 5px !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+}
+.el-input__wrapper:hover { border-color: rgba(62, 170, 255, 0.25) !important; }
+.el-input__wrapper.is-focus {
+  border-color: rgba(62, 170, 255, 0.4) !important;
+  box-shadow: 0 0 0 3px rgba(62, 170, 255, 0.06), inset 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+}
+.el-input__inner { color: #c8dae8; }
+.el-input__inner::placeholder { color: #3f5a70; }
+
+/* ============ 按钮 ============ */
+.el-button--primary {
+  background: linear-gradient(135deg, rgba(62, 170, 255, 0.65), rgba(38, 115, 210, 0.55)) !important;
+  border: 1px solid rgba(62, 170, 255, 0.25) !important;
+  border-radius: 5px !important; color: #e8f4ff !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25), 0 0 8px rgba(62,170,255,0.15);
+}
+.el-button--primary:hover {
+  background: linear-gradient(135deg, rgba(62, 170, 255, 0.75), rgba(45, 130, 235, 0.65)) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 0 14px rgba(62,170,255,0.25);
+  transform: translateY(-1px);
+}
+.el-button--default {
+  background: rgba(8, 20, 40, 0.45) !important;
+  border: 1px solid rgba(62, 170, 255, 0.13) !important;
+  border-radius: 5px !important; color: #8ab4d4 !important;
+}
+
+/* ============ 标签/弹窗/下拉 全集统一 ============ */
+/* ... (保持之前风格) */
+
+/* 滚动条 */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: rgba(4, 12, 24, 0.4); }
+::-webkit-scrollbar-thumb { background: rgba(62, 170, 255, 0.18); border-radius: 3px; }
+
+/* 字体 */
+body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
+
+/* 过渡 */
+.fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+
+/* ============ 设备归属链 — 统一"机组 · 专业 · 设备"呈现 ============
+   用途：所有界面凡展示设备上下文，均用此链，消除跨机组同名设备辨认混乱。
+   仅文字标识（不做机组配色），机组/专业用胶囊、设备用高亮名。
+*/
+.attr-chain { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.attr-unit, .attr-dept {
+  display: inline-flex; align-items: center;
+  font-size: 11px; line-height: 1; padding: 3px 8px; border-radius: 4px;
+  font-weight: 600; letter-spacing: 0.3px; white-space: nowrap;
+}
+.attr-unit {
+  color: #bcdcff; background: rgba(62, 170, 255, 0.14);
+  border: 1px solid rgba(62, 170, 255, 0.35);
+}
+.attr-dept {
+  color: #9fb6cf; background: rgba(120, 160, 200, 0.08);
+  border: 1px solid rgba(120, 160, 200, 0.22);
+}
+.attr-sep { color: #5a7894; font-size: 11px; user-select: none; }
+.attr-dev { color: #e2e8f0; font-weight: 600; font-size: 13px; }

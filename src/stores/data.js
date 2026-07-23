@@ -106,18 +106,21 @@ export const useDataStore = defineStore('data', () => {
 
   // ============ 报警 ============
   // 从 localStorage 读取，刷新页面也保留
-  const stored = JSON.parse(localStorage.getItem('alarms') || 'null')
+  const stored = (() => {
+    try { return JSON.parse(localStorage.getItem('alarms') || 'null') }
+    catch { localStorage.removeItem('alarms'); return null }
+  })()
   const alarms = ref(stored || [
     { id: 'a1', l: 1, time: new Date(Date.now() - 16 * 60000), unit: 'U1', device: 'A引风机', dept: '锅炉', desc: 'A引风机轴承温度异常升高', type: '智能预警', point: 'A引风机轴承温度', val: '82.3℃', st: 'unhandled' },
-    { id: 'a2', l: 1, time: new Date(Date.now() - 24 * 60000), unit: 'U1', device: '润滑油系统', dept: '汽机', desc: '润滑油压力低于安全阈值', type: '阈值报警', point: '润滑油压力', val: '0.12MPa', st: 'unhandled' },
-    { id: 'a3', l: 2, time: new Date(Date.now() - 42 * 60000), unit: 'U1', device: '锅炉', dept: '锅炉', desc: '锅炉主汽温度偏高', type: '智能预警', point: '主汽温度', val: '552.8℃', st: 'confirmed' },
+    { id: 'a2', l: 1, time: new Date(Date.now() - 24 * 60000), unit: 'U1', device: '润滑油系统', dept: '汽轮机', desc: '润滑油压力低于安全阈值', type: '阈值报警', point: '润滑油压力', val: '0.12MPa', st: 'unhandled' },
+    { id: 'a3', l: 2, time: new Date(Date.now() - 42 * 60000), unit: 'U1', device: '锅炉主蒸汽系统', dept: '锅炉', desc: '锅炉主汽温度偏高', type: '智能预警', point: '主汽温度', val: '552.8℃', st: 'confirmed' },
     { id: 'a4', l: 2, time: new Date(Date.now() - 58 * 60000), unit: 'U1', device: 'A磨煤机', dept: '锅炉', desc: 'A磨煤机振动幅值超标', type: '阈值报警', point: 'A磨煤机振动', val: '4.7mm/s', st: 'unhandled' },
-    { id: 'a5', l: 2, time: new Date(Date.now() - 73 * 60000), unit: 'U1', device: '汽轮机', dept: '汽机', desc: '汽轮机轴向位移接近预警', type: '智能预警', point: '轴向位移', val: '0.68mm', st: 'resolved' },
+    { id: 'a5', l: 2, time: new Date(Date.now() - 73 * 60000), unit: 'U1', device: '汽轮机本体', dept: '汽轮机', desc: '汽轮机轴向位移接近预警', type: '智能预警', point: '轴向位移', val: '0.68mm', st: 'resolved' },
     { id: 'a6', l: 2, time: new Date(Date.now() - 95 * 60000), unit: 'U1', device: 'D磨煤机', dept: '锅炉', desc: 'D磨煤机电流波动', type: '阈值报警', point: 'D磨煤机电流', val: '142A', st: 'resolved' },
-    { id: 'a7', l: 2, time: new Date(Date.now() - 112 * 60000), unit: 'U1', device: '除氧器', dept: '辅网', desc: '除氧器水位偏低', type: '阈值报警', point: '除氧器水位', val: '0.82m', st: 'confirmed' },
-    { id: 'a8', l: 3, time: new Date(Date.now() - 125 * 60000), unit: 'U1', device: '给水泵B', dept: '汽机', desc: '给水泵B效率下降预警', type: '智能预警', point: '给水泵B效率', val: '82.1%', st: 'resolved' },
-    { id: 'a9', l: 3, time: new Date(Date.now() - 143 * 60000), unit: 'U1', device: '锅炉', dept: '锅炉', desc: 'NOx排放浓度上升', type: '智能预警', point: 'NOx浓度', val: '68.3mg/m³', st: 'resolved' },
-    { id: 'a10', l: 3, time: new Date(Date.now() - 161 * 60000), unit: 'U1', device: '辅网', dept: '辅网', desc: '冷却塔入口水温偏高', type: '阈值报警', point: '冷却塔入口水温', val: '33.5℃', st: 'resolved' },
+    { id: 'a7', l: 2, time: new Date(Date.now() - 112 * 60000), unit: 'U1', device: '除氧器', dept: '汽轮机', desc: '除氧器水位偏低', type: '阈值报警', point: '除氧器水位', val: '0.82m', st: 'confirmed' },
+    { id: 'a8', l: 3, time: new Date(Date.now() - 125 * 60000), unit: 'U1', device: '给水泵B', dept: '汽轮机', desc: '给水泵B效率下降预警', type: '智能预警', point: '给水泵B效率', val: '82.1%', st: 'resolved' },
+    { id: 'a9', l: 3, time: new Date(Date.now() - 143 * 60000), unit: 'U1', device: '锅炉NOx排放', dept: '锅炉', desc: 'NOx排放浓度上升', type: '智能预警', point: 'NOx浓度', val: '68.3mg/m³', st: 'resolved' },
+    { id: 'a10', l: 3, time: new Date(Date.now() - 161 * 60000), unit: 'U1', device: '循环水系统', dept: '辅网', desc: '冷却塔入口水温偏高', type: '阈值报警', point: '冷却塔入口水温', val: '33.5℃', st: 'resolved' },
     { id: 'a11', l: 3, time: new Date(Date.now() - 178 * 60000), unit: 'U1', device: 'B一次风机', dept: '锅炉', desc: 'B一次风机效率偏低', type: '智能预警', point: 'B一次风机效率', val: '78.5%', st: 'resolved' },
     { id: 'a12', l: 3, time: new Date(Date.now() - 195 * 60000), unit: 'U1', device: '高压加热器', dept: '汽机', desc: '高压加热器端差增大', type: '智能预警', point: '高加上端差', val: '4.8℃', st: 'resolved' }
   ])
@@ -148,8 +151,8 @@ export const useDataStore = defineStore('data', () => {
     { id: 'r1', unit: 'U1', device: 'A引风机', point: '轴承温度', level: 1, cond: '>', val: 80, channels: ['站内', '短信', '钉钉'], enabled: true },
     { id: 'r2', unit: 'U1', device: 'A引风机', point: '振动幅值', level: 1, cond: '>', val: 5, channels: ['站内', '短信'], enabled: true },
     { id: 'r3', unit: 'U1', device: 'A磨煤机', point: '振动', level: 2, cond: '>', val: 4.5, channels: ['站内', '钉钉'], enabled: true },
-    { id: 'r4', unit: 'U1', device: '锅炉', point: '主汽温度', level: 2, cond: '>', val: 545, channels: ['站内', '短信'], enabled: true },
-    { id: 'r5', unit: 'U1', device: '锅炉', point: 'NOx浓度', level: 3, cond: 'trend', val: 0, channels: ['站内'], enabled: true },
+    { id: 'r4', unit: 'U1', device: '锅炉主蒸汽系统', point: '主汽温度', level: 2, cond: '>', val: 545, channels: ['站内', '短信'], enabled: true },
+    { id: 'r5', unit: 'U1', device: '锅炉NOx排放', point: 'NOx浓度', level: 3, cond: 'trend', val: 0, channels: ['站内'], enabled: true },
     { id: 'r6', unit: 'U1', device: '润滑油系统', point: '润滑油压力', level: 1, cond: '<', val: 0.15, channels: ['站内', '短信', '钉钉'], enabled: true }
   ])
   const addRule = (r) => {

@@ -1,43 +1,87 @@
 <template>
-<div>
-  <div style="margin-bottom:14px;display:flex;align-items:center;gap:10px">
-    <span style="font-size:13px;font-weight:500">诊断设备：</span>
-    <el-select v-model="did" style="width:320px" filterable>
-      <el-option v-for="d in diagList" :key="d.id" :value="d.id" :label="d.name + '（' + d.dept + '）' + (d.alarm ? ' — ' + d.alarm : '')"/>
-    </el-select>
+<div class="dg-page">
+  <!-- 头部：设备选择 -->
+  <div class="dg-head">
+    <div class="dg-head-l">
+      <span class="dg-bar"></span>
+      <h2>智能报警诊断</h2>
+      <span class="dg-sub">基于知识图谱的设备故障推理与溯源</span>
+    </div>
+    <div class="dg-dev-sel">
+      <span class="dg-dev-lbl">诊断设备</span>
+      <el-select v-model="did" style="width:340px" filterable>
+        <el-option v-for="d in diagList" :key="d.id" :value="d.id" :label="d.name + '（' + uName(d.unit) + ' · ' + d.dept + '）' + (d.alarm ? ' — ' + d.alarm : '')"/>
+      </el-select>
+    </div>
   </div>
-  <el-row :gutter="14" class="diag-row">
-    <el-col :span="12" class="diag-col"><div class="cd diag-card"><div class="cd-t">智能诊断</div>
-      <div style="background:#0a0e17;border-radius:8px;padding:14px;margin-bottom:12px">
-        <div style="font-size:11px;color:#94a3b8;margin-bottom:4px">诊断对象</div>
-        <div style="font-size:14px;font-weight:500">{{ cur.name }} — {{ cur.fault }}</div>
-      </div>
-      <div class="sect"><div class="cd-t">智能分析结果</div><p>{{ cur.analysis }}</p></div>
-      <div class="sect"><div class="cd-t">可能原因</div>
-        <div v-for="(c,i) in cur.causes" :key="i" class="cause"><span class="tg" :class="c.conf>90?'tg-w':'tg-i'">{{ c.ref }} · {{ c.conf }}</span> {{ c.text }}</div>
-      </div>
-      <div class="sect"><div class="cd-t" style="color:#22c55e">操作指导</div>
-        <p v-for="(g,i) in cur.guide" :key="i">{{ i+1 }}. {{ g }}</p>
-      </div>
-    </div></el-col>
-    <el-col :span="12" class="diag-col">
-      <div class="cd kg-card"><div class="cd-t">知识图谱推理</div>
-        <div class="kg-chart">
-          <ReasoningGraph :case-data="currentGraph" :selected-id="selNodeId" @update:selected-id="v => selNodeId = v" />
+
+  <div class="dg-row">
+    <!-- 左：智能诊断 -->
+    <div class="cd dg-diag">
+      <div class="cd-t"><span class="ut-ic">▸</span>智能诊断</div>
+
+      <div class="dg-obj">
+        <div class="dg-obj-l">诊断对象</div>
+        <div class="dg-obj-v">
+          <span class="attr-unit">{{ curDev ? uName(curDev.unit) : '-' }}</span>
+          <span class="attr-sep">·</span>
+          <span class="attr-dept">{{ curDev ? curDev.dept : '-' }}</span>
+          <span class="attr-sep">·</span>
+          <span class="attr-dev">{{ cur.name }}</span>
+          <span class="dg-fault" style="margin-left:8px">{{ cur.fault }}</span>
         </div>
       </div>
-    </el-col>
-  </el-row>
 
-  <!-- 引用溯源：全宽放底部 -->
-  <div class="cd ref-card">
-    <div class="cd-t">引用溯源</div>
+      <div class="dg-sect">
+        <div class="dg-sect-h"><span class="dg-dot ok"></span>智能分析结果</div>
+        <p class="dg-ans">{{ cur.analysis }}</p>
+      </div>
+
+      <div class="dg-sect">
+        <div class="dg-sect-h"><span class="dg-dot warn"></span>可能原因</div>
+        <div class="dg-causes">
+          <div v-for="(c,i) in cur.causes" :key="i" class="dg-cause">
+            <span class="tg" :class="c.conf>90?'tg-w':'tg-i'">{{ c.ref }}</span>
+            <span class="dg-cause-conf">{{ c.conf }}</span>
+            <span class="dg-cause-txt">{{ c.text }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="dg-sect">
+        <div class="dg-sect-h dg-guide-h"><span class="dg-dot suc"></span>操作指导</div>
+        <div class="dg-guide">
+          <div v-for="(g,i) in cur.guide" :key="i" class="dg-guide-i">
+            <span class="dg-gn">{{ i+1 }}</span><span class="dg-gt">{{ g }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右：知识图谱推理 -->
+    <div class="cd dg-kg">
+      <div class="cd-t"><span class="ut-ic">▸</span>知识图谱推理</div>
+      <div class="kg-chart">
+        <ReasoningGraph :case-data="currentGraph" :selected-id="selNodeId" @update:selected-id="v => selNodeId = v" />
+      </div>
+    </div>
+  </div>
+
+  <!-- 引用溯源 -->
+  <div class="cd dg-ref">
+    <div class="cd-t"><span class="ut-ic">▸</span>引用溯源</div>
     <div class="ref-grid">
       <div v-for="(r,i) in cur.refs" :key="i" class="ref">
-        <span class="tg" :class="r.conf>90?'tg-w':'tg-i'">{{ r.id }}</span>
-        <span style="color:#64748b;font-size:11px;margin-left:6px">{{ r.date }}</span>
+        <div class="ref-h">
+          <span class="tg" :class="r.conf>90?'tg-w':'tg-i'">{{ r.id }}</span>
+          <span class="ref-date">{{ r.date }}</span>
+        </div>
         <div class="ref-desc">{{ r.desc }}</div>
-        <div class="ref-conf">置信度 <strong style="color:#3b82f6">{{ r.conf }}</strong></div>
+        <div class="ref-foot">
+          <span class="ref-foot-l">置信度</span>
+          <span class="ref-conf">{{ r.conf }}</span>
+          <div class="ref-bar"><span :style="{width: r.conf}"></span></div>
+        </div>
       </div>
     </div>
   </div>
@@ -55,11 +99,14 @@ const diagList = computed(() => {
   return store.devices.map(d => {
     const alarm = store.alarms.find(a => a.device === d.name && a.st !== 'resolved')
     return {
-      id: d.id, name: d.name, dept: d.dept,
+      id: d.id, name: d.name, dept: d.dept, unit: d.unit,
       fault: alarm ? alarm.desc : '当前无报警'
     }
   })
 })
+
+const uName = (uid) => store.units.find(u => u.id === uid)?.name || uid
+const curDev = computed(() => store.deviceById(did.value))
 
 const did = ref(store.devices[0]?.id || '')
 
@@ -81,14 +128,33 @@ const allDiagnoses = {
     refs: [{ id: 'REF-1', date: '2025-04-18', desc: '给水泵修复后效率恢复 93%', conf: '88.4%' }, { id: 'REF-2', date: '2025-01-22', desc: '密封环更换记录', conf: '76.1%' }] }
 }
 
-const defaultDiagnosis = (d) => ({
-  name: d.name,
-  fault: '该设备暂无历史故障记录',
-  analysis: `当前 ${d.name}（${d.dept}）运行状态正常，未触发深度诊断分析。AI 将持续监控该设备的关键参数。`,
-  causes: [],
-  guide: ['继续保持当前运行参数', '加强日常巡检频次'],
-  refs: []
-})
+// 通用兜底：根据设备健康度动态生成诊断结论
+const defaultDiagnosis = (d) => {
+  const h = d.health
+  if (h >= 90) {
+    return {
+      name: d.name, fault: '该设备暂无历史故障记录',
+      analysis: `当前 ${uName(d.unit)} · ${d.dept} · ${d.name} 健康度 ${h.toFixed(1)}，运行状态良好，未触发深度诊断分析。AI 将持续监控该设备的关键参数。`,
+      causes: [], guide: ['继续保持当前运行参数', '加强日常巡检频次'], refs: []
+    }
+  }
+  if (h >= 80) {
+    return {
+      name: d.name, fault: '健康度偏低，需加强关注',
+      analysis: `${uName(d.unit)} · ${d.dept} · ${d.name} 健康度 ${h.toFixed(1)}，处于需关注区间。建议结合历史趋势分析潜在风险。`,
+      causes: [{ ref: 'HEALTH-1', conf: '85%', text: '健康度接近预警阈值' }],
+      guide: ['加强设备巡检频次', '记录关键参数变化趋势', '必要时安排预防性检修'],
+      refs: []
+    }
+  }
+  return {
+    name: d.name, fault: '健康度超限预警',
+    analysis: `${uName(d.unit)} · ${d.dept} · ${d.name} 健康度仅 ${h.toFixed(1)}，已低于预警阈值 80。可能存在潜在故障，建议立即排查。`,
+    causes: [{ ref: 'HEALTH-CRIT', conf: '92%', text: '健康度持续低于 80，需立即排查' }],
+    guide: ['立即通知运维班组', '降低设备负荷或停机检查', '调取近期历史曲线辅助分析', '24 小时内完成检修评估'],
+    refs: []
+  }
+}
 
 const cur = computed(() => {
   if (allDiagnoses[did.value]) return allDiagnoses[did.value]
@@ -175,45 +241,92 @@ const graphCases = {
   }
 }
 
-const defaultGraph = (name) => ({
-  title: name + ' 状态评估',
-  nodes: [
-    { id: 'u1', label: name + ' 监测正常', type: 'user', layer: 0, sub: 0, w: 220, h: 36 },
-    { id: 's1', label: name, type: 'symptom', layer: 1, sub: 0, w: 100, h: 32 },
-    { id: 'c1', label: '运行正常', type: 'cause', layer: 3, sub: 0, w: 100, h: 40, pct: 100 },
-    { id: 'r1', label: '继续监控 100%', type: 'solution', layer: 4, sub: 0, w: 120, h: 28 }
-  ],
-  rels: [
-    { from: 'u1', to: 's1', type: '触发' },
-    { from: 's1', to: 'c1', type: '由...导致' },
-    { from: 'c1', to: 'r1', type: '解决' }
-  ]
-})
+const defaultGraph = (name, health) => {
+  const status = health >= 90 ? '状态良好' : health >= 80 ? '需关注' : '存在风险'
+  return {
+    title: name + ' 状态评估',
+    nodes: [
+      { id: 'u1', label: name + ' ' + status, type: 'user', layer: 0, sub: 0, w: 220, h: 36 },
+      { id: 's1', label: name, type: 'symptom', layer: 1, sub: 0, w: 100, h: 32 },
+      { id: 'c1', label: status, type: 'cause', layer: 3, sub: 0, w: 100, h: 40, pct: Math.round(health) },
+      { id: 'r1', label: '继续监控 100%', type: 'solution', layer: 4, sub: 0, w: 120, h: 28 }
+    ],
+    rels: [
+      { from: 'u1', to: 's1', type: '触发' },
+      { from: 's1', to: 'c1', type: '由...导致' },
+      { from: 'c1', to: 'r1', type: '解决' }
+    ]
+  }
+}
 
-const currentGraph = computed(() => graphCases[cur.value.name] || defaultGraph(cur.value.name))
+const currentGraph = computed(() => {
+  const c = cur.value
+  if (graphCases[c.name]) return graphCases[c.name]
+  const d = store.devices.find(x => x.name === c.name)
+  return defaultGraph(c.name, d?.health || 100)
+})
 
 const selNodeId = ref(null)
 </script>
 
 <style scoped>
-.cd { background: #111827; border: 0.5px solid #1e293b; border-radius: 10px; padding: 16px; }
-.cd-t { font-size: 13px; font-weight: 500; margin-bottom: 10px; }
-.sect { margin-bottom: 14px; }
-.sect p { font-size: 12px; color: #94a3b8; line-height: 1.8; margin-bottom: 4px; }
-.cause { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-size: 12px; color: #94a3b8; }
-.tg { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
-.tg-w { background: rgba(245,158,11,0.12); color: #f59e0b; }
-.tg-i { background: rgba(59,130,246,0.12); color: #3b82f6; }
+.dg-page { display: flex; flex-direction: column; gap: 14px; min-height: 100%; }
+.dg-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.dg-head-l { display: flex; align-items: center; gap: 12px; }
+.dg-bar { width: 4px; height: 22px; background: linear-gradient(180deg, #3eaaff, #22d3ee); border-radius: 2px; box-shadow: 0 0 10px rgba(62,170,255,0.5); }
+.dg-head h2 { font-size: 17px; font-weight: 600; color: #d4ecff; letter-spacing: 0.5px; }
+.dg-sub { font-size: 11px; color: #8fb0cf; }
+.dg-dev-sel { display: flex; align-items: center; gap: 10px; }
+.dg-dev-lbl { font-size: 12px; color: #8fb0cf; white-space: nowrap; }
+.ut-ic { color: #3eaaff; font-weight: 700; margin-right: 2px; }
 
-.diag-card, .kg-card { height: 550px; overflow: hidden; }
-.diag-card { overflow-y: auto; }
-.kg-card { display: flex; flex-direction: column; }
-.kg-card .cd-t { flex-shrink: 0; }
-.kg-chart { flex: 1; min-height: 0; }
+.dg-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.dg-diag { display: flex; flex-direction: column; }
+.dg-kg { display: flex; flex-direction: column; }
+.dg-kg .cd-t { flex-shrink: 0; }
+.kg-chart { flex: 1; min-height: 460px; background: linear-gradient(180deg, rgba(6,18,36,0.4), rgba(8,22,42,0.25)); border-radius: 6px; }
 
-.ref-card { margin-top: 14px; }
-.ref-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px; }
-.ref { background: #0a0e17; padding: 12px; border-radius: 8px; font-size: 12px; color: #94a3b8; border: 0.5px solid #1e293b; }
-.ref-desc { color: #cbd5e1; margin: 6px 0; line-height: 1.5; }
-.ref-conf { font-size: 11px; color: #94a3b8; }
+/* 诊断对象 */
+.dg-obj { background: linear-gradient(135deg, rgba(10,24,42,0.6), rgba(6,16,30,0.55)); border: 1px solid rgba(62,170,255,0.15); border-radius: 6px; padding: 14px 16px; margin-bottom: 14px; box-shadow: 0 2px 12px rgba(0,10,30,0.2); }
+.dg-obj-l { font-size: 12px; color: #9fb6cf; margin-bottom: 6px; font-weight: 500; }
+.dg-obj-v { font-size: 16px; font-weight: 600; color: #e2e8f0; }
+.dg-fault { color: #fbbf24; }
+
+.dg-sect { margin-bottom: 14px; }
+.dg-sect-h { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: #d4ecff; margin-bottom: 10px; }
+.dg-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.dg-dot.ok { background: #3eaaff; box-shadow: 0 0 8px #3eaaff; }
+.dg-dot.warn { background: #fbbf24; box-shadow: 0 0 8px #fbbf24; }
+.dg-dot.suc { background: #34d399; box-shadow: 0 0 8px #34d399; }
+.dg-ans { font-size: 13px; color: #cbd5e1; line-height: 2; background: linear-gradient(180deg, rgba(6,18,36,0.7), rgba(8,22,42,0.5)); border-left: 3px solid rgba(62,170,255,0.4); padding: 12px 14px; border-radius: 0 6px 6px 0; box-shadow: inset 0 0 20px rgba(62,170,255,0.03); }
+
+.dg-causes { display: flex; flex-direction: column; gap: 10px; }
+.dg-cause { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #cbd5e1; background: linear-gradient(180deg, rgba(6,18,36,0.7), rgba(8,22,42,0.5)); padding: 10px 12px; border-radius: 6px; border: 1px solid rgba(62,170,255,0.1); transition: all 0.2s; }
+.dg-cause:hover { border-color: rgba(62,170,255,0.25); transform: translateX(2px); }
+.dg-cause-conf { font-family: "SF Mono","Consolas",monospace; color: #fbbf24; font-weight: 600; }
+.dg-cause-txt { color: #cbd5e1; }
+
+.dg-guide { display: flex; flex-direction: column; gap: 8px; }
+.dg-guide-i { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: #cbd5e1; background: linear-gradient(90deg, rgba(52,211,153,0.08), transparent); padding: 10px 12px; border-radius: 6px; border-left: 2px solid rgba(52,211,153,0.3); transition: all 0.2s; }
+.dg-guide-i:hover { background: linear-gradient(90deg, rgba(52,211,153,0.12), transparent); border-left-color: rgba(52,211,153,0.5); }
+.dg-gn { width: 20px; height: 20px; flex-shrink: 0; border-radius: 50%; background: rgba(52,211,153,0.18); color: #34d399; border: 1.5px solid rgba(52,211,153,0.4); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; box-shadow: 0 0 8px rgba(52,211,153,0.2); }
+.dg-gt { line-height: 1.6; padding-top: 1px; }
+
+/* 引用溯源 */
+.dg-ref { margin-top: 0; }
+.ref-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
+.ref { background: linear-gradient(180deg, rgba(10,24,42,0.6), rgba(6,16,32,0.55)); padding: 14px 16px; border-radius: 6px; border: 1px solid rgba(62,170,255,0.14); transition: all 0.25s; }
+.ref:hover { border-color: rgba(62,170,255,0.35); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,10,30,0.3); }
+.ref-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.ref-date { font-size: 11px; color: #8fb0cf; font-family: "SF Mono","Consolas",monospace; }
+.ref-desc { color: #cbd5e1; margin: 6px 0; line-height: 1.6; font-size: 12px; }
+.ref-foot { display: flex; align-items: center; gap: 8px; }
+.ref-foot-l { font-size: 11px; color: #8fb0cf; }
+.ref-conf { font-size: 12px; color: #3eaaff; font-weight: 700; font-family: "SF Mono","Consolas",monospace; }
+.ref-bar { flex: 1; height: 4px; border-radius: 2px; background: rgba(62,170,255,0.1); overflow: hidden; }
+.ref-bar span { display: block; height: 100%; background: linear-gradient(90deg, #3eaaff, #22d3ee); border-radius: 2px; }
+
+.tg { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.tg-w { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.25); }
+.tg-i { background: rgba(62,170,255,0.15); color: #3eaaff; border: 1px solid rgba(62,170,255,0.25); }
 </style>

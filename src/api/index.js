@@ -5,7 +5,7 @@ import {
 
 // ======= Mock 开关 =======
 // 改为 false 即可切换为真实 API（需启动 dev-back + 算法服务）
-export const USE_MOCK = true
+export const USE_MOCK = false//true
 
 // ======= 统一导出 =======
 export {

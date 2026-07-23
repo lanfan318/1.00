@@ -20,7 +20,7 @@
              class="ac-list-i" :class="{on: current?.id === r.id}"
              @click="selectRule(r)">
           <div class="ac-list-row1">
-            <span class="ac-list-name">{{ r.device }} - {{ r.point }}</span>
+            <span class="ac-list-name">{{ uName(r.unit) }} · {{ r.device }} - {{ r.point }}</span>
             <el-tag :type="r.level===1?'danger':r.level===2?'warning':'info'" size="small">{{ lvlTxt(r.level) }}</el-tag>
           </div>
           <div class="ac-list-row2">
@@ -50,7 +50,7 @@
             <div class="ac-form">
               <label><em class="req">*</em>点项</label>
               <el-select v-model="form.pointKey" placeholder="请选择测点" filterable style="width:100%">
-                <el-option v-for="d in store.devices" :key="d.id" :value="d.id" :label="d.name + ' / ' + Object.keys(d.params)[0]" />
+                <el-option v-for="d in store.devices" :key="d.id" :value="d.id" :label="d.name + '（' + uName(d.unit) + ' · ' + d.dept + '） / ' + Object.keys(d.params)[0]" />
               </el-select>
             </div>
           </el-col>
@@ -92,14 +92,15 @@
                 <el-option value="汽轮机" label="汽轮机" />
                 <el-option value="电气" label="电气" />
                 <el-option value="热工" label="热工" />
+                <el-option value="辅网" label="辅网" />
               </el-select>
             </div>
           </el-col>
           <el-col :span="6">
             <div class="ac-form">
-              <label>系统/设备</label>
-              <el-select v-model="form.device" placeholder="请选择系统/设备" filterable style="width:100%">
-                <el-option v-for="d in unitDevices" :key="d.id" :value="d.name" :label="d.name" />
+              <label>设备</label>
+              <el-select v-model="form.device" placeholder="请选择设备" filterable style="width:100%">
+                <el-option v-for="d in unitDevices" :key="d.id" :value="d.name" :label="d.name + '（' + d.dept + '）'" />
               </el-select>
             </div>
           </el-col>
@@ -266,6 +267,7 @@ const selectedChannels = computed(() =>
 
 const lvlTxt = (l) => l === 1 ? '一级' : l === 2 ? '二级' : '智能预警'
 const chLabel = (key) => store.channels.find(c => c.key === key)?.label || key
+const uName = (uid) => store.units.find(u => u.id === uid)?.name || uid
 
 const selectRule = (r) => {
   current.value = r
@@ -273,7 +275,7 @@ const selectRule = (r) => {
     id: r.id,
     pointKey: r.id, pointDesc: r.device + '-' + r.point,
     alarmDesc: r.device + r.point + ' 异常',
-    unit: r.unit || 'U1', dept: '锅炉', device: r.device,
+    unit: r.unit || 'U1', dept: store.devices.find(d => d.name === r.device)?.dept || '锅炉', device: r.device,
     type: '阈值报警', delay: r.delay || 0, triggers: 1,
     channels: r.channels || ['站内'], enabled: r.enabled,
     mode: 'analog',
@@ -303,7 +305,7 @@ const delRule = (i) => {
 }
 
 const save = () => {
-  if (!form.value.device) { ElMessage.warning('请选择系统/设备'); return }
+  if (!form.value.device) { ElMessage.warning('请选择设备'); return }
   if (!form.value.unit) { ElMessage.warning('请选择机组'); return }
   if (form.value.rules.some(r => r.val === '' || r.val === null)) {
     ElMessage.warning('请填写所有规则的值')
@@ -344,55 +346,60 @@ watch(() => form.value.unit, () => {
 </script>
 
 <style scoped>
-.pg-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.pg-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
 .pg-h-right { display: flex; gap: 10px; align-items: center; }
-h2 { font-size: 16px; font-weight: 500; }
+h2 { font-size: 17px; font-weight: 700; color: #d4ecff; letter-spacing: 0.5px; }
 
 .ac-layout { display: grid; grid-template-columns: 360px 1fr; gap: 14px; min-height: calc(100vh - 180px); }
 
 /* 左侧列表 */
-.ac-left { background: #111827; border: 0.5px solid #1e293b; border-radius: 10px; padding: 12px; display: flex; flex-direction: column; }
-.ac-left-h { display: flex; justify-content: space-between; align-items: center; padding: 4px 4px 10px; border-bottom: 0.5px solid #1e293b; font-size: 13px; color: #94a3b8; font-weight: 500; }
-.ac-list { flex: 1; overflow-y: auto; margin-top: 8px; }
-.ac-list-i { padding: 10px; border-radius: 6px; cursor: pointer; margin-bottom: 6px; border: 0.5px solid transparent; background: #0a0e17; }
-.ac-list-i:hover { border-color: #1e293b; }
-.ac-list-i.on { border-color: #3b82f6; background: rgba(59,130,246,0.08); }
-.ac-list-row1 { display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
-.ac-list-name { color: #e2e8f0; font-weight: 500; }
-.ac-list-row2 { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #94a3b8; margin-top: 4px; }
+.ac-left { background: linear-gradient(180deg, rgba(12,26,46,0.7), rgba(8,18,34,0.65)); border: 1px solid rgba(62,170,255,0.15); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; box-shadow: 0 2px 12px rgba(0,10,30,0.25); }
+.ac-left-h { display: flex; justify-content: space-between; align-items: center; padding: 6px 6px 12px; border-bottom: 1px solid rgba(62,170,255,0.15); font-size: 14px; color: #d4ecff; font-weight: 600; letter-spacing: 0.5px; }
+.ac-list { flex: 1; overflow-y: auto; margin-top: 10px; }
+.ac-list-i { padding: 12px; border-radius: 6px; cursor: pointer; margin-bottom: 8px; border: 1px solid transparent; background: linear-gradient(180deg, rgba(10,24,42,0.55), rgba(6,16,30,0.5)); transition: all 0.2s; }
+.ac-list-i:hover { border-color: rgba(62,170,255,0.2); background: linear-gradient(180deg, rgba(12,28,50,0.6), rgba(8,20,38,0.55)); }
+.ac-list-i.on { border-color: #3eaaff; background: linear-gradient(180deg, rgba(20,50,85,0.4), rgba(12,30,52,0.35)); box-shadow: 0 0 16px rgba(62,170,255,0.12), inset 0 0 20px rgba(62,170,255,0.03); }
+.ac-list-row1 { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+.ac-list-name { color: #e2e8f0; font-weight: 600; }
+.ac-list-row2 { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #9fb6cf; margin-top: 6px; }
 .ac-list-row3 { margin-top: 4px; }
-.ac-empty { text-align: center; padding: 30px; color: #64748b; font-size: 12px; }
+.ac-empty { text-align: center; padding: 30px; color: #8fb0cf; font-size: 12px; }
 
 /* 右侧配置 */
-.ac-right { background: #111827; border: 0.5px solid #1e293b; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
-.ac-config-h { display: flex; justify-content: space-between; align-items: center; padding-bottom: 6px; border-bottom: 0.5px solid #1e293b; font-size: 14px; color: #e2e8f0; font-weight: 500; }
-.ac-config-tips { font-size: 11px; color: #94a3b8; font-weight: 400; }
+.ac-right { background: linear-gradient(180deg, rgba(10,26,50,0.6), rgba(6,16,32,0.55)); border: 1px solid rgba(62,170,255,0.18); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; position: relative; box-shadow: 0 4px 24px rgba(0,10,30,0.3), inset 0 1px 0 rgba(62,170,255,0.05); }
+.ac-right::before, .ac-right::after { content:''; position:absolute; width:14px; height:14px; border:1.5px solid #3eaaff; box-shadow:0 0 6px rgba(62,170,255,0.45); pointer-events:none; }
+.ac-right::before { top:-1px; left:-1px; border-right:none; border-bottom:none; }
+.ac-right::after { bottom:-1px; right:-1px; border-left:none; border-top:none; }
+.ac-config-h { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px 12px 20px; background: linear-gradient(90deg, rgba(62,170,255,0.18), rgba(62,170,255,0.03)); border-left: 4px solid #3eaaff; font-size: 17px; color: #eaf4ff; font-weight: 700; letter-spacing: 1px; margin: -18px -18px 10px; box-shadow: -4px 0 16px -3px rgba(62,170,255,0.25); }
+.ac-config-tips { font-size: 11px; color: #8fb0cf; font-weight: 400; }
 .req { color: #ef4444; font-style: normal; }
 
-.ac-section { background: #0a0e17; border-radius: 8px; padding: 12px 14px; }
-.ac-section-h { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #e2e8f0; font-weight: 500; margin-bottom: 10px; }
-.ac-num { display: inline-block; width: 18px; height: 18px; background: #3b82f6; color: #fff; border-radius: 4px; text-align: center; line-height: 18px; font-size: 11px; margin-right: 6px; }
+.ac-section { background: linear-gradient(180deg, rgba(8,22,42,0.5), rgba(6,16,32,0.45)); border: 1px solid rgba(62,170,255,0.12); border-radius: 6px; padding: 16px; transition: all 0.2s; }
+.ac-section:hover { border-color: rgba(62,170,255,0.2); }
+.ac-section-h { display: flex; justify-content: space-between; align-items: center; font-size: 15px; color: #d4ecff; font-weight: 600; margin-bottom: 14px; padding-left: 12px; border-left: 3px solid #3eaaff; }
+.ac-num { display: inline-block; width: 20px; height: 20px; background: linear-gradient(135deg, #3eaaff, #22d3ee); color: #fff; border-radius: 5px; text-align: center; line-height: 20px; font-size: 12px; font-weight: 800; margin-right: 8px; box-shadow: 0 0 10px rgba(62,170,255,0.35); }
 
-.ac-form { display: flex; flex-direction: column; gap: 4px; }
-.ac-form label { font-size: 12px; color: #cbd5e1; }
+.ac-form { display: flex; flex-direction: column; gap: 5px; }
+.ac-form label { font-size: 13px; color: #cbd5e1; font-weight: 500; }
 
 /* 规则列表 */
-.ac-rules-thead, .ac-rule-row { display: flex; gap: 8px; padding: 8px 4px; align-items: center; }
-.ac-rules-thead { background: rgba(59,130,246,0.06); border-radius: 4px; margin-bottom: 4px; }
-.ac-th { font-size: 12px; color: #94a3b8; text-align: center; }
+.ac-rules-thead, .ac-rule-row { display: flex; gap: 8px; padding: 10px 6px; align-items: center; }
+.ac-rules-thead { background: linear-gradient(90deg, rgba(62,170,255,0.1), rgba(62,170,255,0.03)); border-radius: 5px; margin-bottom: 6px; }
+.ac-th { font-size: 12px; color: #d4ecff; text-align: center; font-weight: 600; }
 .ac-td { font-size: 12px; }
-.ac-rule-row { border-bottom: 0.5px dashed #1e293b; }
-.ac-add-rule { text-align: center; padding: 10px; background: rgba(59,130,246,0.06); border: 0.5px dashed #3b82f6; border-radius: 4px; color: #3b82f6; cursor: pointer; font-size: 12px; margin-top: 6px; }
-.ac-add-rule:hover { background: rgba(59,130,246,0.12); }
+.ac-rule-row { border-bottom: 0.5px dashed rgba(62,170,255,0.15); transition: background 0.15s; }
+.ac-rule-row:hover { background: rgba(62,170,255,0.04); border-radius: 4px; }
+.ac-add-rule { text-align: center; padding: 12px; background: linear-gradient(180deg, rgba(62,170,255,0.08), rgba(62,170,255,0.03)); border: 1px dashed #3eaaff; border-radius: 5px; color: #3eaaff; cursor: pointer; font-size: 13px; margin-top: 8px; transition: all 0.2s; }
+.ac-add-rule:hover { background: rgba(62,170,255,0.12); box-shadow: 0 0 12px rgba(62,170,255,0.15); }
 
 /* 通知渠道 */
-.ac-channels { background: #0a0e17; border-radius: 8px; padding: 12px 14px; }
+.ac-channels { background: #061224; border-radius: 8px; padding: 12px 14px; }
 .ac-ch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
 .ac-ch-card { display: flex; gap: 8px; padding: 10px; background: #111827; border-radius: 6px; }
 .ac-ch-ic { font-size: 20px; }
 .ac-ch-lb { font-size: 12px; color: #e2e8f0; font-weight: 500; }
-.ac-ch-key { color: #64748b; font-size: 10px; font-weight: 400; }
-.ac-ch-desc { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+.ac-ch-key { color: #8fb0cf; font-size: 11px; font-weight: 400; }
+.ac-ch-desc { font-size: 11px; color: #8fb0cf; margin-top: 2px; }
 
 .ac-footer { display: flex; justify-content: flex-end; gap: 8px; padding-top: 6px; }
 </style>

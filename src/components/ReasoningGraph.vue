@@ -6,7 +6,7 @@
        :style="{transform: `translate(${tx}px, ${ty}px) scale(${scale})`, transformOrigin: '0 0'}">
     <defs>
       <marker id="rg-arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
-        <path d="M0,0 L6,3 L0,6 Z" fill="#475569" />
+        <path d="M0,0 L6,3 L0,6 Z" fill="#5a6e85" />
       </marker>
     </defs>
 
@@ -21,8 +21,8 @@
     <g class="rel-labels">
       <g v-for="(l, i) in layoutRelLabels" :key="'rl'+i">
         <rect :x="l.x - l.w/2" :y="l.y - 9" :width="l.w" height="16" rx="3"
-              fill="#1e293b" stroke="#475569" stroke-width="0.5" />
-        <text :x="l.x" :y="l.y + 3" text-anchor="middle" font-size="9" fill="#94a3b8">{{ l.text }}</text>
+              fill="rgba(62,170,255,0.08)" stroke="#5a6e85" stroke-width="0.5" />
+        <text :x="l.x" :y="l.y + 3" text-anchor="middle" font-size="9" fill="#7a9cc0">{{ l.text }}</text>
       </g>
     </g>
 
@@ -143,8 +143,8 @@ function makeNode(n, x, y, ov) {
     ...n,
     x: ov?.x ?? x,
     y: ov?.y ?? y,
-    bg: COL[n.type]?.bg || '#1e293b',
-    border: COL[n.type]?.border || '#475569',
+    bg: COL[n.type]?.bg || 'rgba(62,170,255,0.08)',
+    border: COL[n.type]?.border || '#5a6e85',
     color: COL[n.type]?.color || '#e2e8f0'
   }
 }
@@ -266,17 +266,17 @@ onUnmounted(() => { draggingNode = null; panning = false })
 </script>
 
 <style scoped>
-.rg-container { position: relative; width: 100%; height: 100%; overflow: hidden; background: #0a0e17; border-radius: 6px; user-select: none; cursor: grab; }
+.rg-container { position: relative; width: 100%; height: 100%; overflow: hidden; background: #061224; border-radius: 6px; user-select: none; cursor: grab; }
 .rg-container:active { cursor: grabbing; }
 .rg-svg { width: 100%; height: 100%; display: block; }
 .rg-node { cursor: grab; transition: filter 0.1s; }
 .rg-node:active { cursor: grabbing; }
 .rg-node:hover rect { filter: brightness(1.15); }
 .rg-node.active rect { stroke-width: 2.5; filter: drop-shadow(0 0 6px currentColor); }
-.rg-tip { position: absolute; top: 8px; left: 12px; font-size: 11px; color: #64748b; background: rgba(15,23,42,0.7); padding: 4px 10px; border-radius: 4px; pointer-events: none; }
-.rg-controls { position: absolute; bottom: 10px; right: 10px; display: flex; align-items: center; gap: 6px; background: rgba(15,23,42,0.85); padding: 4px 8px; border-radius: 6px; border: 0.5px solid #1e293b; }
-.rg-zoom-txt { font-size: 11px; color: #94a3b8; min-width: 36px; text-align: center; }
-.rg-legend { position: absolute; bottom: 10px; left: 10px; display: flex; gap: 12px; background: rgba(15,23,42,0.85); padding: 6px 12px; border-radius: 6px; font-size: 11px; color: #94a3b8; border: 0.5px solid #1e293b; }
+.rg-tip { position: absolute; top: 8px; left: 12px; font-size: 11px; color: #7a9cc0; background: rgba(15,23,42,0.7); padding: 4px 10px; border-radius: 4px; pointer-events: none; }
+.rg-controls { position: absolute; bottom: 10px; right: 10px; display: flex; align-items: center; gap: 6px; background: rgba(15,23,42,0.85); padding: 4px 8px; border-radius: 6px; border: 0.5px solid rgba(62,170,255,0.08); }
+.rg-zoom-txt { font-size: 11px; color: #7a9cc0; min-width: 36px; text-align: center; }
+.rg-legend { position: absolute; bottom: 10px; left: 10px; display: flex; gap: 12px; background: rgba(15,23,42,0.85); padding: 6px 12px; border-radius: 6px; font-size: 11px; color: #7a9cc0; border: 0.5px solid rgba(62,170,255,0.08); }
 .rg-lg-i { display: flex; align-items: center; gap: 4px; }
 .rg-lg-d { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
 </style>

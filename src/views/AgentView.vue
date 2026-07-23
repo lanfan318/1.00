@@ -3,10 +3,13 @@
   <!-- 自定义顶栏（深色） -->
   <div class="ai-top">
     <div class="ai-top-l">
+      <el-button class="ai-back-btn" text size="small" @click="goBack">
+        <el-icon><ArrowLeft /></el-icon>&nbsp;返回
+      </el-button>
       <span class="ai-top-tt">智能预警与故障诊断</span>
     </div>
     <div class="ai-top-r">
-      <span class="ai-status"><span class="ai-dot"></span>通讯正常</span>
+      <span class="ai-status"><span class="ai-dot"></span>在线</span>
       <span class="ai-user"><el-icon><UserFilled /></el-icon>{{ userStore.username }}</span>
     </div>
   </div>
@@ -65,7 +68,7 @@
       <!-- 模式提示 -->
       <div v-if="mode >= 0" class="ai-mode-hint">
         <el-icon><InfoFilled /></el-icon>
-        <span>已进入 <strong style="color:#3b82f6">{{ fns[mode].lb }}</strong> 模式，输入你的问题，AI 将基于当前数据和知识图谱分析</span>
+        <span>已进入 <strong style="color:#3eaaff">{{ fns[mode].lb }}</strong> 模式，输入你的问题，AI 将基于当前数据和知识图谱分析</span>
         <el-button link type="primary" @click="exitMode">退出模式</el-button>
       </div>
 
@@ -87,7 +90,7 @@
             <div class="ai-card-h">
               <span class="ai-card-title">{{ m.card.title }}</span>
               <span class="ai-card-stat" v-if="m.card.stat">
-                <span class="ai-cs-dot" :style="{background: m.card.statColor || '#22c55e'}"></span>
+                <span class="ai-cs-dot" :style="{background: m.card.statColor || '#34d399'}"></span>
                 {{ m.card.stat }}
               </span>
             </div>
@@ -144,11 +147,14 @@
 <script setup>
 import { ref, computed, nextTick, onMounted, watch, onUnmounted, reactive } from 'vue'
 import * as echarts from 'echarts'
+import { useRouter } from 'vue-router'
 import { useDataStore } from '@/stores/data'
 import { useUserStore } from '@/stores/user'
 
 const store = useDataStore()
 const userStore = useUserStore()
+const router = useRouter()
+const goBack = () => { router.push('/dashboard') }
 const q = ref('')
 const histKw = ref('')
 const mode = ref(-1)
@@ -185,7 +191,7 @@ const chatHistory = ref([
       card: {
         title: 'A引风机 · 出力正常 · 健康度 97.3',
         stat: '无残差预警',
-        statColor: '#22c55e',
+        statColor: '#34d399',
         body: `<div class="ai-mt"><span>机组的负荷</span><strong>500.0 MW</strong></div>
 <div class="ai-mt"><span>比功</span><strong>2854 Nm/kg</strong></div>
 <div class="ai-mt"><span>体积流量</span><strong>157.9 m³/s</strong></div>
@@ -268,35 +274,35 @@ const renderChart = (id, el) => {
         type: 'category', name: '体积流量(m³/s)',
         data: [100, 120, 140, 160, 180, 200, 220, 240, 260],
         axisLine: { lineStyle: { color: '#475569' } },
-        axisLabel: { color: '#94a3b8' },
-        nameTextStyle: { color: '#94a3b8' }
+        axisLabel: { color: '#8fb0cf' },
+        nameTextStyle: { color: '#8fb0cf' }
       },
       yAxis: {
         type: 'value', name: '比功(Nm/Kg)', min: 6000, max: 14000,
         axisLine: { lineStyle: { color: '#475569' } },
-        axisLabel: { color: '#94a3b8' },
-        splitLine: { lineStyle: { color: '#1e293b' } },
-        nameTextStyle: { color: '#94a3b8' }
+        axisLabel: { color: '#8fb0cf' },
+        splitLine: { lineStyle: { color: 'rgba(62,170,255,0.12)' } },
+        nameTextStyle: { color: '#8fb0cf' }
       },
       series: [
         { name: '失谐线', type: 'line', smooth: true, symbol: 'none',
           lineStyle: { color: '#ef4444', width: 2 },
           data: [13200, 13100, 12900, 12600, 12300, 12000, 11700, 11400, 11100] },
         { name: '当前工况', type: 'line', smooth: true, symbol: 'circle', symbolSize: 8,
-          lineStyle: { color: '#3b82f6', width: 2.5 },
-          itemStyle: { color: '#3b82f6' },
+          lineStyle: { color: '#3eaaff', width: 2.5 },
+          itemStyle: { color: '#3eaaff' },
           data: [12000, 12200, 12400, 12600, 12400, 11800, 11000, 10000, 9500] },
         { name: '等熵曲线', type: 'line', smooth: true, symbol: 'none',
-          lineStyle: { color: '#6366f1', width: 1, type: 'dashed' },
+          lineStyle: { color: '#3eaaff', width: 1, type: 'dashed' },
           data: [10000, 10500, 11000, 11500, 11500, 11000, 10500, 9500, 8500] },
         { name: '等熵曲线2', type: 'line', smooth: true, symbol: 'none',
-          lineStyle: { color: '#6366f1', width: 1, type: 'dashed' },
+          lineStyle: { color: '#3eaaff', width: 1, type: 'dashed' },
           data: [9500, 10000, 10500, 11000, 11000, 10500, 10000, 9000, 8000] },
         { name: '等熵曲线3', type: 'line', smooth: true, symbol: 'none',
-          lineStyle: { color: '#6366f1', width: 1, type: 'dashed' },
+          lineStyle: { color: '#3eaaff', width: 1, type: 'dashed' },
           data: [9000, 9500, 10000, 10500, 10500, 10000, 9500, 8500, 7500] },
         { name: '等熵曲线4', type: 'line', smooth: true, symbol: 'none',
-          lineStyle: { color: '#6366f1', width: 1, type: 'dashed' },
+          lineStyle: { color: '#3eaaff', width: 1, type: 'dashed' },
           data: [8500, 9000, 9500, 10000, 10000, 9500, 9000, 8000, 7000] }
       ]
     })
@@ -342,47 +348,121 @@ const send = () => {
   }, 600)
 }
 
+// ============ 设备识别 + 智能回答 ============
+
+// 设备中文名 → store.devices 中的关键字
+const findDevice = (q) => {
+  const devs = store.devices
+  // 1) 精确匹配：先试 A/B/C/D + 设备名
+  const letterMatch = q.match(/([A-D])\s*(引风机|送风机|一次风机|磨煤机|给水泵|凝汽器|高压加热器|除氧器|润滑油)/)
+  if (letterMatch) {
+    const target = letterMatch[2]
+    const prefix = letterMatch[1]
+    const found = devs.find(d => d.name.startsWith(prefix) && d.name.includes(target))
+    if (found) return found
+  }
+  // 2) 仅按设备类型匹配（取第一个）
+  for (const kw of ['引风机', '送风机', '一次风机', '磨煤机', '给水泵', '凝汽器', '高压加热器', '除氧器', '润滑油']) {
+    if (q.includes(kw)) {
+      return devs.find(d => d.name.includes(kw))
+    }
+  }
+  return null
+}
+
+// 设备健康度状态描述
+const healthLabel = (h) => {
+  if (h >= 95) return { text: '运行状态良好', color: '#34d399' }
+  if (h >= 85) return { text: '需加强巡检', color: '#fbbf24' }
+  if (h >= 75) return { text: '建议尽快安排检修', color: '#fbbf24' }
+  return { text: '已超限，需立即处置', color: '#ef4444' }
+}
+
+// 设备卡片：真实数据驱动
+const deviceCard = (d, q) => {
+  const params = d.params || {}
+  const h = d.health
+  const hl = healthLabel(h)
+  // 取前 5 个参数做展示
+  const lines = Object.entries(params).slice(0, 6).map(([k, v]) => {
+    const over = v[0] >= v[1]
+    return `<div class="ai-mt"><span>${k}</span><strong style="color:${over ? '#ef4444' : '#c8e4ff'}">${v[0]} ${v[2]}</strong></div>`
+  }).join('')
+  return {
+    title: `${d.name} · ${hl.text} · 健康度 ${h.toFixed(1)}`,
+    stat: h >= 95 ? '无异常' : (h >= 85 ? '需关注' : '存在风险'),
+    statColor: hl.color,
+    body: `<div class="ai-mt"><span>所属机组</span><strong>${d.unit}</strong></div>
+<div class="ai-mt"><span>所属专业</span><strong>${d.dept}</strong></div>
+<div class="ai-mt"><span>设备型号</span><strong>${d.model}</strong></div>
+${lines}`,
+    ok: hl.text + (q.includes('为什么') || q.includes('原因') ? '。详细原因可查看诊断页。' : '')
+  }
+}
+
 const generateCard = (q) => {
-  if (q.includes('引风机')) {
+  // 报警相关
+  if (q.includes('报警') || q.includes('告警')) {
+    const a = store.alarms
+    const l1 = a.filter(x => x.l === 1).length
+    const l2 = a.filter(x => x.l === 2).length
+    const l3 = a.filter(x => x.l === 3).length
+    const uh = a.filter(x => x.st === 'unhandled').length
     return {
-      title: 'A引风机 · 出力正常 · 健康度 97.3',
-      stat: '无残差预警',
-      statColor: '#22c55e',
-      body: `<div class="ai-mt"><span>机组的负荷</span><strong>500.0 MW</strong></div>
-<div class="ai-mt"><span>比功</span><strong>2854 Nm/kg</strong></div>
-<div class="ai-mt"><span>体积流量</span><strong>157.9 m³/s</strong></div>
-<div class="ai-mt"><span>效率</span><strong>51%</strong></div>
-<div class="ai-mt"><span>电流平衡</span><strong>99.58%</strong></div>`,
-      ok: '整体运行良好'
+      title: store.selectedUnit.name + ' · 当前报警统计',
+      stat: '待处理 ' + uh + ' 条',
+      statColor: uh > 0 ? '#ef4444' : '#34d399',
+      body: `<div class="ai-mt"><span>一级报警</span><strong style="color:#ef4444">${l1} 条</strong></div>
+<div class="ai-mt"><span>二级报警</span><strong style="color:#fbbf24">${l2} 条</strong></div>
+<div class="ai-mt"><span>智能预警</span><strong style="color:#22d3ee">${l3} 条</strong></div>
+<div class="ai-mt"><span>未处理合计</span><strong style="color:${uh > 0 ? '#ef4444' : '#34d399'}">${uh} 条</strong></div>`,
+      ok: l1 > 0 ? '⚠️ 当前 ' + l1 + ' 条一级报警需立即处置' : '系统无一级报警'
     }
   }
-  if (q.includes('报警')) {
+
+  // 负荷/趋势
+  if (q.includes('负荷') || q.includes('趋势')) {
+    const u = store.selectedUnit
     return {
-      title: store.selectedUnit.name + ' · 当前报警',
-      stat: '待处理 4 条',
-      statColor: '#ef4444',
-      body: `<div class="ai-mt"><span>一级未处理</span><strong style="color:#ef4444">2 条</strong></div>
-<div class="ai-mt"><span>二级未处理</span><strong style="color:#f59e0b">2 条</strong></div>
-<div class="ai-mt"><span>智能预警</span><strong style="color:#06b6d4">5 条</strong></div>`,
-      ok: '已生成处置建议'
+      title: u.name + ' · 实时负荷与运行参数',
+      stat: '当前负荷 ' + u.base.load + ' MW',
+      statColor: '#34d399',
+      body: `<div class="ai-mt"><span>当前负荷</span><strong>${u.base.load} MW</strong></div>
+<div class="ai-mt"><span>主汽压力</span><strong>${u.base.press} MPa</strong></div>
+<div class="ai-mt"><span>主汽温度</span><strong>${u.base.temp} ℃</strong></div>
+<div class="ai-mt"><span>煤耗</span><strong>${u.base.coal} g/kWh</strong></div>
+<div class="ai-mt"><span>NOx排放</span><strong>${u.base.nox} mg/m³</strong></div>
+<div class="ai-mt"><span>SO₂排放</span><strong>${u.base.so2} mg/m³</strong></div>
+<div class="ai-mt"><span>烟尘</span><strong>${u.base.dust} mg/m³</strong></div>`,
+      ok: '负荷稳定，运行正常'
     }
   }
+
+  // 设备相关（含工况、健康度等）
+  const dev = findDevice(q)
+  if (dev) return deviceCard(dev, q)
+
+  // 兜底
   return {
     title: '查询结果',
     stat: '已分析',
-    statColor: '#22c55e',
+    statColor: '#34d399',
     body: `<div class="ai-mt"><span>查询</span><strong>${q}</strong></div>
-<div class="ai-mt"><span>匹配度</span><strong>92%</strong></div>`,
-    ok: '分析完成'
+<div class="ai-mt"><span>匹配度</span><strong>92%</strong></div>
+<div class="ai-mt"><span>建议</span><strong>切换功能模块或精确输入设备名</strong></div>`,
+    ok: '已收到您的问题'
   }
 }
 
 const generateChart = (q) => {
-  if (q.includes('引风机') || q.includes('工况')) {
-    return { id: 'chart-' + Date.now(), source: 'Surface', id: 's5_b8391b357e7', title: '引风机工况分析', toggle: true }
+  if (q.includes('引风机') || q.includes('工况') || q.includes('风机') || q.includes('送风')) {
+    return { id: 'chart-' + Date.now(), source: 'Surface', id: 's5_b8391b357e7', title: '风机工况分析', toggle: true }
   }
-  if (q.includes('负荷') || q.includes('趋势')) {
+  if (q.includes('负荷') || q.includes('趋势') || q.includes('主汽')) {
     return { id: 'chart-trend-' + Date.now(), source: 'Trend', id: 'load_24h', title: '负荷变化趋势', toggle: true }
+  }
+  if (q.includes('温度') || q.includes('压力')) {
+    return { id: 'chart-trend-' + Date.now(), source: 'Trend', id: 'tag_recent', title: '测点近24h趋势', toggle: true }
   }
   return null
 }
@@ -392,110 +472,112 @@ onUnmounted(() => Object.values(charts).forEach(c => c?.dispose()))
 </script>
 
 <style scoped>
-.ai-page { position: fixed; inset: 0; background: #0a0e17; display: flex; flex-direction: column; z-index: 100; color: #e2e8f0; }
+.ai-page { position: fixed; inset: 0; background: #061224; display: flex; flex-direction: column; z-index: 100; color: #c8e4ff; }
 
 /* 顶栏（深色） */
-.ai-top { display: flex; align-items: center; padding: 0 24px; height: 48px; background: #0d1117; border-bottom: 0.5px solid #1e293b; }
-.ai-top-tt { font-size: 15px; font-weight: 600; color: #e2e8f0; }
-.ai-top-r { margin-left: auto; display: flex; align-items: center; gap: 16px; font-size: 12px; color: #94a3b8; }
-.ai-status { display: flex; align-items: center; gap: 6px; color: #22c55e; font-weight: 500; }
-.ai-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+.ai-top { display: flex; align-items: center; padding: 0 24px; height: 48px; background: #040810; border-bottom: 0.5px solid rgba(62,170,255,0.12); }
+.ai-top-tt { font-size: 15px; font-weight: 600; color: #c8e4ff; }
+.ai-back-btn { color: #8fb0cf; margin-right: 8px; }
+.ai-back-btn:hover { color: #5fb3ff; }
+.ai-top-r { margin-left: auto; display: flex; align-items: center; gap: 16px; font-size: 12px; color: #8fb0cf; }
+.ai-status { display: flex; align-items: center; gap: 6px; color: #34d399; font-weight: 500; }
+.ai-dot { width: 8px; height: 8px; border-radius: 50%; background: #34d399; box-shadow: 0 0 6px #34d399; }
 .ai-user { display: flex; align-items: center; gap: 4px; color: #cbd5e1; }
 
 .ai-body { flex: 1; display: grid; grid-template-columns: 260px 1fr; min-height: 0; }
 
 /* 左侧（深色） */
-.ai-sb { background: #0d1117; border-right: 0.5px solid #1e293b; display: flex; flex-direction: column; }
+.ai-sb { background: #040810; border-right: 0.5px solid rgba(62,170,255,0.12); display: flex; flex-direction: column; }
 .ai-sb-top { padding: 14px 14px 6px; }
-.ai-new-btn { width: 100%; background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none; }
+.ai-new-btn { width: 100%; background: linear-gradient(135deg, #3eaaff, #22d3ee); border: none; }
 .ai-sb-search { padding: 6px 14px 10px; }
-.ai-sb-search :deep(.el-input__wrapper) { background: #111827; box-shadow: 0 0 0 0.5px #1e293b inset; }
-.ai-sb-search :deep(.el-input__inner) { color: #e2e8f0; }
-.ai-sb-search :deep(.el-input__inner::placeholder) { color: #64748b; }
+.ai-sb-search :deep(.el-input__wrapper) { background: rgba(8,20,40,0.7); box-shadow: 0 0 0 0.5px rgba(62,170,255,0.12) inset; }
+.ai-sb-search :deep(.el-input__inner) { color: #c8e4ff; }
+.ai-sb-search :deep(.el-input__inner::placeholder) { color: #8fb0cf; }
 .ai-sb-list { flex: 1; overflow-y: auto; padding: 4px 8px 14px; }
-.ai-sb-g { font-size: 11px; color: #64748b; font-weight: 600; padding: 10px 8px 4px; }
+.ai-sb-g { font-size: 11px; color: #8fb0cf; font-weight: 600; padding: 10px 8px 4px; }
 .ai-sb-i { padding: 10px 12px; border-radius: 8px; cursor: pointer; transition: all 0.15s; }
-.ai-sb-i:hover { background: #1a2332; }
-.ai-sb-i.on { background: rgba(59,130,246,0.15); }
+.ai-sb-i:hover { background: rgba(62,170,255,0.1); }
+.ai-sb-i.on { background: rgba(62,170,255,0.15); }
 .ai-sb-i-t { font-size: 13px; color: #cbd5e1; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ai-sb-i.on .ai-sb-i-t { color: #e2e8f0; }
+.ai-sb-i.on .ai-sb-i-t { color: #c8e4ff; }
 
 /* 主区（深色） */
 .ai-main { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-.ai-mh { display: flex; align-items: center; padding: 14px 24px; border-bottom: 0.5px solid #1e293b; gap: 12px; }
-.ai-mh-tt { font-size: 16px; font-weight: 600; color: #e2e8f0; }
+.ai-mh { display: flex; align-items: center; padding: 14px 24px; border-bottom: 0.5px solid rgba(62,170,255,0.12); gap: 12px; }
+.ai-mh-tt { font-size: 16px; font-weight: 600; color: #c8e4ff; }
 .ai-mh-tag { display: flex; gap: 6px; }
-.ai-mh-r { margin-left: auto; color: #94a3b8; }
+.ai-mh-r { margin-left: auto; color: #8fb0cf; }
 
 /* 8 个功能模块 */
-.ai-fns { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; padding: 8px 24px; background: #0a0e17; border-bottom: 0.5px solid #1e293b; }
-.ai-fn-i { background: #161d2a; border: 0.5px solid #1e293b; border-radius: 8px; padding: 8px 6px; cursor: pointer; text-align: center; transition: 0.15s; }
-.ai-fn-i:hover { border-color: #3b82f6; background: rgba(59,130,246,0.08); }
-.ai-fn-i.on { border-color: #3b82f6; background: rgba(59,130,246,0.18); box-shadow: 0 0 0 1px #3b82f6; }
+.ai-fns { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; padding: 8px 24px; background: #061224; border-bottom: 0.5px solid rgba(62,170,255,0.12); }
+.ai-fn-i { background: #161d2a; border: 0.5px solid rgba(62,170,255,0.12); border-radius: 8px; padding: 8px 6px; cursor: pointer; text-align: center; transition: 0.15s; }
+.ai-fn-i:hover { border-color: #3eaaff; background: rgba(62,170,255,0.08); }
+.ai-fn-i.on { border-color: #3eaaff; background: rgba(62,170,255,0.18); box-shadow: 0 0 0 1px #3eaaff; }
 .ai-fn-ic { font-size: 18px; margin-bottom: 2px; }
 .ai-fn-lb { font-size: 11px; color: #cbd5e1; font-weight: 500; }
-.ai-fn-i.on .ai-fn-lb { color: #60a5fa; }
+.ai-fn-i.on .ai-fn-lb { color: #5fb3ff; }
 
 /* 模式提示 */
-.ai-mode-hint { display: flex; align-items: center; gap: 8px; padding: 6px 24px; background: rgba(59,130,246,0.08); border-bottom: 0.5px solid #1e293b; font-size: 12px; color: #94a3b8; }
-.ai-mode-hint .el-icon { color: #3b82f6; }
+.ai-mode-hint { display: flex; align-items: center; gap: 8px; padding: 6px 24px; background: rgba(62,170,255,0.08); border-bottom: 0.5px solid rgba(62,170,255,0.12); font-size: 12px; color: #8fb0cf; }
+.ai-mode-hint .el-icon { color: #3eaaff; }
 
 /* 消息列表 */
-.ai-msgs { flex: 1; overflow-y: auto; padding: 18px 24px; background: #0a0e17; min-height: 0; }
+.ai-msgs { flex: 1; overflow-y: auto; padding: 18px 24px; background: #061224; min-height: 0; }
 .ai-msg { margin-bottom: 14px; max-width: 92%; }
 .ai-msg.bot { margin-right: auto; }
 .ai-msg.usr { margin-left: auto; }
 
 /* 思考过程（深色） */
-.ai-thinking { background: #1a2332; border: 0.5px solid #2a3544; border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; }
+.ai-thinking { background: rgba(62,170,255,0.1); border: 0.5px solid #2a3544; border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; }
 .ai-th-h { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 12px; color: #a78bfa; font-weight: 500; }
 .ai-th-fire { color: #a78bfa; }
 .ai-th-arrow { margin-left: auto; }
 .ai-th-c { margin-top: 6px; padding-top: 6px; border-top: 0.5px dashed #2a3544; font-size: 12px; color: #c4b5fd; line-height: 1.6; }
 
 /* 报告卡片（深色） */
-.ai-card { background: #111827; border: 0.5px solid #1e293b; border-radius: 10px; padding: 14px 16px; }
-.ai-card-h { display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 0.5px solid #1e293b; margin-bottom: 10px; }
-.ai-card-title { font-size: 14px; font-weight: 600; color: #e2e8f0; }
-.ai-card-stat { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #22c55e; }
+.ai-card { background: rgba(8,20,40,0.7); border: 0.5px solid rgba(62,170,255,0.12); border-radius: 10px; padding: 14px 16px; }
+.ai-card-h { display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 0.5px solid rgba(62,170,255,0.12); margin-bottom: 10px; }
+.ai-card-title { font-size: 14px; font-weight: 600; color: #c8e4ff; }
+.ai-card-stat { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #34d399; }
 .ai-cs-dot { width: 8px; height: 8px; border-radius: 50%; }
 .ai-card-c { font-size: 13px; color: #cbd5e1; line-height: 1.8; }
 .ai-card-c :deep(.ai-mt) { display: flex; justify-content: space-between; padding: 4px 0; }
-.ai-card-c :deep(.ai-mt span) { color: #94a3b8; }
-.ai-card-c :deep(.ai-mt strong) { color: #e2e8f0; font-weight: 600; }
-.ai-card-ok { margin-top: 10px; padding-top: 8px; border-top: 0.5px solid #1e293b; font-size: 13px; color: #22c55e; display: flex; align-items: center; gap: 4px; font-weight: 500; }
+.ai-card-c :deep(.ai-mt span) { color: #8fb0cf; }
+.ai-card-c :deep(.ai-mt strong) { color: #c8e4ff; font-weight: 600; }
+.ai-card-ok { margin-top: 10px; padding-top: 8px; border-top: 0.5px solid rgba(62,170,255,0.12); font-size: 13px; color: #34d399; display: flex; align-items: center; gap: 4px; font-weight: 500; }
 
 /* 趋势图（深色） */
-.ai-chart { background: #0a0e17; border: 0.5px solid #1e293b; border-radius: 10px; padding: 12px 16px; margin-top: 8px; }
+.ai-chart { background: #061224; border: 0.5px solid rgba(62,170,255,0.12); border-radius: 10px; padding: 12px 16px; margin-top: 8px; }
 .ai-chart-h { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-.ai-chart-l { font-size: 12px; color: #94a3b8; display: flex; align-items: center; gap: 4px; }
-.ai-chart-id { color: #64748b; font-family: monospace; }
-.ai-chart-tt { font-size: 14px; font-weight: 600; color: #e2e8f0; margin: 0 12px; }
-.ai-chart-c { width: 100%; height: 320px; background: #0a0e17; }
+.ai-chart-l { font-size: 12px; color: #8fb0cf; display: flex; align-items: center; gap: 4px; }
+.ai-chart-id { color: #8fb0cf; font-family: monospace; }
+.ai-chart-tt { font-size: 14px; font-weight: 600; color: #c8e4ff; margin: 0 12px; }
+.ai-chart-c { width: 100%; height: 320px; background: #061224; }
 
 /* 文本消息（深色） */
-.ai-text { background: #1a2332; padding: 10px 14px; border-radius: 8px; font-size: 13px; color: #e2e8f0; line-height: 1.7; border: 0.5px solid #2a3544; }
-.ai-msg.usr .ai-text { background: rgba(59,130,246,0.15); border-color: #3b82f6; color: #e2e8f0; }
+.ai-text { background: rgba(62,170,255,0.1); padding: 10px 14px; border-radius: 8px; font-size: 13px; color: #c8e4ff; line-height: 1.7; border: 0.5px solid #2a3544; }
+.ai-msg.usr .ai-text { background: rgba(62,170,255,0.15); border-color: #3eaaff; color: #c8e4ff; }
 
 /* 你可能想问 */
-.ai-quick-q { padding: 6px 24px; background: rgba(34,197,94,0.05); border-top: 0.5px solid #1e293b; }
-.ai-quick-q-t { font-size: 11px; color: #22c55e; margin-bottom: 4px; font-weight: 500; }
+.ai-quick-q { padding: 6px 24px; background: rgba(34,197,94,0.05); border-top: 0.5px solid rgba(62,170,255,0.12); }
+.ai-quick-q-t { font-size: 11px; color: #34d399; margin-bottom: 4px; font-weight: 500; }
 .ai-quick-q-l { display: flex; flex-wrap: wrap; gap: 6px; }
 .ai-qq { padding: 4px 12px; background: rgba(34,197,94,0.1); border: 0.5px solid rgba(34,197,94,0.3); border-radius: 16px; font-size: 11px; color: #86efac; cursor: pointer; transition: all 0.15s; }
-.ai-qq:hover { border-color: #22c55e; background: rgba(34,197,94,0.2); color: #bbf7d0; }
+.ai-qq:hover { border-color: #34d399; background: rgba(34,197,94,0.2); color: #bbf7d0; }
 
 /* 模板 */
-.ai-templates { display: flex; gap: 8px; padding: 6px 24px; background: #0a0e17; border-top: 0.5px solid #1e293b; }
-.ai-tpl { flex: 1; padding: 6px 10px; background: #111827; border: 0.5px solid #1e293b; border-radius: 6px; font-size: 11px; color: #cbd5e1; cursor: pointer; text-align: center; transition: all 0.15s; }
-.ai-tpl:hover { border-color: #3b82f6; color: #60a5fa; background: rgba(59,130,246,0.1); }
+.ai-templates { display: flex; gap: 8px; padding: 6px 24px; background: #061224; border-top: 0.5px solid rgba(62,170,255,0.12); }
+.ai-tpl { flex: 1; padding: 6px 10px; background: rgba(8,20,40,0.7); border: 0.5px solid rgba(62,170,255,0.12); border-radius: 6px; font-size: 11px; color: #cbd5e1; cursor: pointer; text-align: center; transition: all 0.15s; }
+.ai-tpl:hover { border-color: #3eaaff; color: #5fb3ff; background: rgba(62,170,255,0.1); }
 
 /* 输入框（深色） */
-.ai-inp { display: flex; align-items: center; gap: 8px; padding: 10px 24px; background: #0d1117; border-top: 0.5px solid #1e293b; }
-.ai-inp :deep(.el-input__wrapper) { background: #111827; box-shadow: 0 0 0 0.5px #1e293b inset; border-radius: 20px; padding: 4px 14px; }
-.ai-inp :deep(.el-input__inner) { color: #e2e8f0; }
-.ai-inp :deep(.el-input__inner::placeholder) { color: #64748b; }
-.ai-inp-ic { border-radius: 50%; width: 36px; height: 36px; padding: 0; background: #111827; border: 0.5px solid #1e293b; color: #94a3b8; }
-.ai-inp-ic:hover { border-color: #3b82f6; color: #60a5fa; }
-.ai-inp-send { border-radius: 50%; width: 36px; height: 36px; padding: 0; background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none; }
-.ai-inp-send:disabled { background: #1e293b; }
+.ai-inp { display: flex; align-items: center; gap: 8px; padding: 10px 24px; background: #040810; border-top: 0.5px solid rgba(62,170,255,0.12); }
+.ai-inp :deep(.el-input__wrapper) { background: rgba(8,20,40,0.7); box-shadow: 0 0 0 0.5px rgba(62,170,255,0.12) inset; border-radius: 20px; padding: 4px 14px; }
+.ai-inp :deep(.el-input__inner) { color: #c8e4ff; }
+.ai-inp :deep(.el-input__inner::placeholder) { color: #8fb0cf; }
+.ai-inp-ic { border-radius: 50%; width: 36px; height: 36px; padding: 0; background: rgba(8,20,40,0.7); border: 0.5px solid rgba(62,170,255,0.12); color: #8fb0cf; }
+.ai-inp-ic:hover { border-color: #3eaaff; color: #5fb3ff; }
+.ai-inp-send { border-radius: 50%; width: 36px; height: 36px; padding: 0; background: linear-gradient(135deg, #3eaaff, #22d3ee); border: none; }
+.ai-inp-send:disabled { background: rgba(62,170,255,0.12); }
 </style>
