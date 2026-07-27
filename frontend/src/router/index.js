@@ -11,9 +11,10 @@ const routes = [
   {
     path: '/',
     component: () => import('@/components/AppLayout.vue'),
-    redirect: '/dashboard',
     meta: { requiresAuth: true },
     children: [
+      { path: '',                  component: () => import('@/views/BigScreenView.vue'),         meta: { title: '智能预警监控大屏' } },
+      { path: 'dashboard',         component: () => import('@/views/DashboardView.vue'),          meta: { title: '智能监盘' } },
       { path: 'dashboard',         component: () => import('@/views/DashboardView.vue'),          meta: { title: '智能监盘' } },
       { path: 'global-alert',      component: () => import('@/views/GlobalAlertView.vue'),       meta: { title: '全域告警大屏' } },
       { path: 'alarms',            component: () => import('@/views/AlarmListView.vue'),         meta: { title: '实时报警' } },
@@ -24,9 +25,10 @@ const routes = [
       { path: 'devices',           component: () => import('@/views/DeviceManageView.vue'),      meta: { title: '设备模型' } },
       { path: 'stats',             component: () => import('@/views/StatsView.vue'),             meta: { title: '统计报表' } },
       { path: 'agent',             component: () => import('@/views/AgentView.vue'),             meta: { title: 'AI 运行智能体' } },
-      { path: 'algorithm',         component: () => import('@/views/AlgorithmView.vue'),         meta: { title: '算法建模' } },
       { path: 'trace',             component: () => import('@/views/TraceView.vue'),             meta: { title: '故障溯源' } },
-      { path: 'knowledge-graph',   component: () => import('@/views/KnowledgeGraphView.vue'),    meta: { title: '知识图谱' } }
+      { path: 'knowledge-graph',   component: () => import('@/views/KnowledgeGraphView.vue'),    meta: { title: '知识图谱' } },
+      { path: 'warn-adjudication', component: () => import('@/views/WarnAdjudicationView.vue'),  meta: { title: '预警研判' } },
+      { path: 'model-opt',         component: () => import('@/views/ModelOptView.vue'),          meta: { title: '模型优化' } }
     ]
   }
 ]

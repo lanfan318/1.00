@@ -3,10 +3,13 @@
   <!-- 自定义顶栏（深色） -->
   <div class="ai-top">
     <div class="ai-top-l">
-      <span class="ai-top-tt">智能预警与故障诊断</span>
+      <el-button class="ai-back-btn" text size="small" @click="goBack">
+        <el-icon><ArrowLeft /></el-icon>&nbsp;返回
+      </el-button>
+      <span class="ai-top-tt">AI 运行智能体</span>
     </div>
     <div class="ai-top-r">
-      <span class="ai-status"><span class="ai-dot"></span>通讯正常</span>
+      <span class="ai-status"><span class="ai-dot"></span>在线</span>
       <span class="ai-user"><el-icon><UserFilled /></el-icon>{{ userStore.username }}</span>
     </div>
   </div>
@@ -65,7 +68,7 @@
       <!-- 模式提示 -->
       <div v-if="mode >= 0" class="ai-mode-hint">
         <el-icon><InfoFilled /></el-icon>
-        <span>已进入 <strong style="color:#3b82f6">{{ fns[mode].lb }}</strong> 模式，输入你的问题，AI 将基于当前数据和知识图谱分析</span>
+        <span>已进入 <strong style="color:#3eaaff">{{ fns[mode].lb }}</strong> 模式，输入你的问题，AI 将基于当前数据和知识图谱分析</span>
         <el-button link type="primary" @click="exitMode">退出模式</el-button>
       </div>
 
@@ -87,7 +90,7 @@
             <div class="ai-card-h">
               <span class="ai-card-title">{{ m.card.title }}</span>
               <span class="ai-card-stat" v-if="m.card.stat">
-                <span class="ai-cs-dot" :style="{background: m.card.statColor || '#22c55e'}"></span>
+                <span class="ai-cs-dot" :style="{background: m.card.statColor || '#34d399'}"></span>
                 {{ m.card.stat }}
               </span>
             </div>
@@ -106,6 +109,9 @@
               <span class="ai-chart-tt">{{ m.chart.title }}</span>
               <el-button size="small" v-if="m.chart.toggle" @click="m.chartShow = !m.chartShow">
                 {{ m.chartShow ? '隐藏工况' : '显示工况' }}
+              </el-button>
+              <el-button size="small" class="ai-chart-link" @click="linkToBoard(m)">
+                <el-icon><Position /></el-icon> 在大屏定位
               </el-button>
             </div>
             <div v-show="m.chartShow !== false" :ref="el => { if (el) chartRefs[m.chart.id] = el }" class="ai-chart-c"></div>
@@ -129,12 +135,62 @@
         <div v-for="t in quickTemplates" :key="t" class="ai-tpl" @click="askQuick(t)">{{ t }}</div>
       </div>
 
+      <!-- 多条件查询构建器 -->
+      <div class="ai-qb" :class="{open: qb.open}">
+        <div class="ai-qb-h">
+          <el-button text size="small" class="ai-qb-toggle" @click="qb.open = !qb.open">
+            <el-icon><Filter /></el-icon> 多条件查询构建器
+            <span class="ai-qb-cnt" v-if="qbChipList.length">{{ qbChipList.length }}</span>
+          </el-button>
+          <span class="ai-qb-hint">可直接查看 / 调整已选机组 · 参数 · 时间范围，结果将同步联动图表与大屏</span>
+        </div>
+        <div class="ai-qb-body" v-show="qb.open">
+          <div class="ai-qb-field">
+            <label>机组</label>
+            <el-select v-model="qb.unit" size="small" style="width:120px">
+              <el-option v-for="u in store.units" :key="u.id" :value="u.id" :label="u.name" />
+            </el-select>
+          </div>
+          <div class="ai-qb-field" style="flex:1;min-width:200px">
+            <label>参数 <span class="ai-qb-tip">（可多选）</span></label>
+            <el-select v-model="qb.params" multiple collapse-tags size="small" style="width:100%" placeholder="选择分析参数">
+              <el-option v-for="p in qbParamOptions" :key="p" :value="p" :label="p" />
+            </el-select>
+          </div>
+          <div class="ai-qb-field">
+            <label>时间范围</label>
+            <el-select v-model="qb.range" size="small" style="width:130px">
+              <el-option value="1h" label="近 1 小时" />
+              <el-option value="6h" label="近 6 小时" />
+              <el-option value="24h" label="近 24 小时" />
+              <el-option value="7d" label="近 7 天" />
+              <el-option value="custom" label="自定义时段" />
+            </el-select>
+          </div>
+          <div class="ai-qb-field" v-if="qb.range==='custom'">
+            <label>起止</label>
+            <el-date-picker v-model="qb.rangeCustom" type="datetimerange" size="small" style="width:240px"
+              range-separator="~" start-placeholder="开始" end-placeholder="结束" />
+          </div>
+          <!-- 已选条件可视化 chips -->
+          <div class="ai-qb-chips">
+            <span class="ai-chip" v-for="c in qbChipList" :key="c.k">
+              <i :class="c.ic"></i>{{ c.lbl }}
+              <em v-if="c.closable" @click="c.clear">×</em>
+            </span>
+            <span class="ai-chip ai-chip-clear" v-if="qbChipList.length" @click="qbClear">清空</span>
+          </div>
+        </div>
+      </div>
+
       <!-- 输入框 -->
       <div class="ai-inp">
-        <el-input v-model="q" :placeholder="mode >= 0 ? '在 ' + fns[mode].lb + ' 模式下提问...' : '先选个功能模块再提问'" @keyup.enter="send" />
-        <el-button class="ai-inp-ic"><el-icon><Paperclip /></el-icon></el-button>
-        <el-button class="ai-inp-ic"><el-icon><Microphone /></el-icon></el-button>
+        <el-input v-model="q" :placeholder="mode >= 0 ? '在 ' + fns[mode].lb + ' 模式下提问...（Ctrl+Enter 发送）' : '先选个功能模块再提问（Ctrl+Enter 发送）'" @keyup.ctrl.enter="send" @keyup.enter="send" />
+        <el-button class="ai-inp-ic" :class="{rec: voiceOn}" @click="toggleVoice">
+          <el-icon><Microphone /></el-icon>
+        </el-button>
         <el-button type="primary" class="ai-inp-send" :disabled="mode < 0" @click="send"><el-icon><Promotion /></el-icon></el-button>
+        <span v-if="voiceTip" class="ai-voice-tip">{{ voiceTip }}</span>
       </div>
     </div>
   </div>
@@ -143,12 +199,16 @@
 
 <script setup>
 import { ref, computed, nextTick, onMounted, watch, onUnmounted, reactive } from 'vue'
-import * as echarts from 'echarts'
+import * as echarts from '@/utils/echarts'
+import { useRouter } from 'vue-router'
 import { useDataStore } from '@/stores/data'
 import { useUserStore } from '@/stores/user'
+import { ElMessage } from 'element-plus'
 
 const store = useDataStore()
 const userStore = useUserStore()
+const router = useRouter()
+const goBack = () => { router.push('/') }
 const q = ref('')
 const histKw = ref('')
 const mode = ref(-1)
@@ -177,6 +237,46 @@ const quickTemplates = computed(() => {
   return fns[mode.value].questions.slice(0, 3)
 })
 
+// ============ 多条件查询构建器 ============
+const qb = reactive({ open: false, unit: 'U1', params: [], range: '24h', rangeCustom: null })
+const qbParamOptions = computed(() => {
+  const set = new Set()
+  store.unitDevices(qb.unit).forEach(d => Object.keys(d.params || {}).forEach(k => set.add(k)))
+  return [...set]
+})
+const rangeLabel = (r) => ({ '1h': '近1小时', '6h': '近6小时', '24h': '近24小时', '7d': '近7天', custom: '自定义时段' }[r] || r)
+const qbChipList = computed(() => {
+  const out = [{ k: 'unit', ic: '🏭', lbl: store.units.find(u => u.id === qb.unit)?.name || qb.unit, closable: false }]
+  qb.params.forEach(p => out.push({ k: 'p-' + p, ic: '📊', lbl: p, closable: true, clear: () => { qb.params = qb.params.filter(x => x !== p) } }))
+  out.push({ k: 'range', ic: '⏱', lbl: qb.range === 'custom' ? '自定义时段' : rangeLabel(qb.range), closable: false })
+  return out
+})
+const qbClear = () => { qb.params = []; qb.range = '24h'; qb.rangeCustom = null }
+
+// ============ 语音输入（Web Speech API） ============
+const voiceOn = ref(false)
+const voiceTip = ref('')
+let recognition = null
+const toggleVoice = () => {
+  if (voiceOn.value) { recognition && recognition.stop(); voiceOn.value = false; voiceTip.value = ''; return }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition
+  if (!SR) { voiceTip.value = '当前浏览器不支持语音输入'; setTimeout(() => voiceTip.value = '', 2600); return }
+  try {
+    recognition = new SR()
+    recognition.lang = 'zh-CN'; recognition.interimResults = false; recognition.maxAlternatives = 1
+    recognition.onresult = (e) => { q.value = e.results[0][0].transcript; voiceTip.value = '' }
+    recognition.onerror = (e) => { voiceTip.value = '语音识别失败：' + e.error; voiceOn.value = false; setTimeout(() => voiceTip.value = '', 2600) }
+    recognition.onend = () => { voiceOn.value = false }
+    recognition.start(); voiceOn.value = true; voiceTip.value = '正在聆听…（请说出您的问题）'
+  } catch (err) { voiceTip.value = '无法启动语音识别'; voiceOn.value = false }
+}
+
+// ============ 图表联动大屏 ============
+const linkToBoard = (m) => {
+  router.push({ path: '/', query: { focus: 'analysis', chart: m.chart?.id || '' } })
+  ElMessage.success('已联动至监控大屏 · 智能分析面板')
+}
+
 // ============ 历史对话数据 ============
 const chatHistory = ref([
   { id: 'c1', title: 'A引风机工况情况', time: '今天', unit: 'U1', msgs: [
@@ -185,7 +285,7 @@ const chatHistory = ref([
       card: {
         title: 'A引风机 · 出力正常 · 健康度 97.3',
         stat: '无残差预警',
-        statColor: '#22c55e',
+        statColor: '#34d399',
         body: `<div class="ai-mt"><span>机组的负荷</span><strong>500.0 MW</strong></div>
 <div class="ai-mt"><span>比功</span><strong>2854 Nm/kg</strong></div>
 <div class="ai-mt"><span>体积流量</span><strong>157.9 m³/s</strong></div>
@@ -268,35 +368,35 @@ const renderChart = (id, el) => {
         type: 'category', name: '体积流量(m³/s)',
         data: [100, 120, 140, 160, 180, 200, 220, 240, 260],
         axisLine: { lineStyle: { color: '#475569' } },
-        axisLabel: { color: '#94a3b8' },
-        nameTextStyle: { color: '#94a3b8' }
+        axisLabel: { color: '#8fb0cf' },
+        nameTextStyle: { color: '#8fb0cf' }
       },
       yAxis: {
         type: 'value', name: '比功(Nm/Kg)', min: 6000, max: 14000,
         axisLine: { lineStyle: { color: '#475569' } },
-        axisLabel: { color: '#94a3b8' },
-        splitLine: { lineStyle: { color: '#1e293b' } },
-        nameTextStyle: { color: '#94a3b8' }
+        axisLabel: { color: '#8fb0cf' },
+        splitLine: { lineStyle: { color: 'rgba(62,170,255,0.12)' } },
+        nameTextStyle: { color: '#8fb0cf' }
       },
       series: [
         { name: '失谐线', type: 'line', smooth: true, symbol: 'none',
           lineStyle: { color: '#ef4444', width: 2 },
           data: [13200, 13100, 12900, 12600, 12300, 12000, 11700, 11400, 11100] },
         { name: '当前工况', type: 'line', smooth: true, symbol: 'circle', symbolSize: 8,
-          lineStyle: { color: '#3b82f6', width: 2.5 },
-          itemStyle: { color: '#3b82f6' },
+          lineStyle: { color: '#3eaaff', width: 2.5 },
+          itemStyle: { color: '#3eaaff' },
           data: [12000, 12200, 12400, 12600, 12400, 11800, 11000, 10000, 9500] },
         { name: '等熵曲线', type: 'line', smooth: true, symbol: 'none',
-          lineStyle: { color: '#6366f1', width: 1, type: 'dashed' },
+          lineStyle: { color: '#3eaaff', width: 1, type: 'dashed' },
           data: [10000, 10500, 11000, 11500, 11500, 11000, 10500, 9500, 8500] },
         { name: '等熵曲线2', type: 'line', smooth: true, symbol: 'none',
-          lineStyle: { color: '#6366f1', width: 1, type: 'dashed' },
+          lineStyle: { color: '#3eaaff', width: 1, type: 'dashed' },
           data: [9500, 10000, 10500, 11000, 11000, 10500, 10000, 9000, 8000] },
         { name: '等熵曲线3', type: 'line', smooth: true, symbol: 'none',
-          lineStyle: { color: '#6366f1', width: 1, type: 'dashed' },
+          lineStyle: { color: '#3eaaff', width: 1, type: 'dashed' },
           data: [9000, 9500, 10000, 10500, 10500, 10000, 9500, 8500, 7500] },
         { name: '等熵曲线4', type: 'line', smooth: true, symbol: 'none',
-          lineStyle: { color: '#6366f1', width: 1, type: 'dashed' },
+          lineStyle: { color: '#3eaaff', width: 1, type: 'dashed' },
           data: [8500, 9000, 9500, 10000, 10000, 9500, 9000, 8000, 7000] }
       ]
     })
@@ -366,22 +466,27 @@ const findDevice = (q) => {
 
 // 设备健康度状态描述
 const healthLabel = (h) => {
-  if (h >= 95) return { text: '运行状态良好', color: '#22c55e' }
-  if (h >= 85) return { text: '需加强巡检', color: '#f59e0b' }
-  if (h >= 75) return { text: '建议尽快安排检修', color: '#f59e0b' }
+  if (h >= 95) return { text: '运行状态良好', color: '#34d399' }
+  if (h >= 85) return { text: '需加强巡检', color: '#fbbf24' }
+  if (h >= 75) return { text: '建议尽快安排检修', color: '#fbbf24' }
   return { text: '已超限，需立即处置', color: '#ef4444' }
 }
 
-// 设备卡片：真实数据驱动
+// 设备卡片：真实数据驱动（受查询构建器参数/范围约束）
 const deviceCard = (d, q) => {
   const params = d.params || {}
   const h = d.health
   const hl = healthLabel(h)
-  // 取前 5 个参数做展示
-  const lines = Object.entries(params).slice(0, 6).map(([k, v]) => {
+  // 查询构建器选中参数时只展示这些参数，否则展示前 6 个
+  const entries = Object.entries(params)
+  const filtered = qb.params.length ? entries.filter(([k]) => qb.params.includes(k)) : entries.slice(0, 6)
+  const lines = filtered.map(([k, v]) => {
     const over = v[0] >= v[1]
-    return `<div class="ai-mt"><span>${k}</span><strong style="color:${over ? '#ef4444' : '#e2e8f0'}">${v[0]} ${v[2]}</strong></div>`
+    return `<div class="ai-mt"><span>${k}</span><strong style="color:${over ? '#ef4444' : '#c8e4ff'}">${v[0]} ${v[2]}</strong></div>`
   }).join('')
+  const scopeLine = qb.params.length
+    ? `<div class="ai-mt ai-scope"><span>查询范围</span><strong>${store.units.find(u => u.id === qb.unit)?.name} · ${qb.params.join('/')} · ${rangeLabel(qb.range)}</strong></div>`
+    : ''
   return {
     title: `${d.name} · ${hl.text} · 健康度 ${h.toFixed(1)}`,
     stat: h >= 95 ? '无异常' : (h >= 85 ? '需关注' : '存在风险'),
@@ -389,6 +494,7 @@ const deviceCard = (d, q) => {
     body: `<div class="ai-mt"><span>所属机组</span><strong>${d.unit}</strong></div>
 <div class="ai-mt"><span>所属专业</span><strong>${d.dept}</strong></div>
 <div class="ai-mt"><span>设备型号</span><strong>${d.model}</strong></div>
+${scopeLine}
 ${lines}`,
     ok: hl.text + (q.includes('为什么') || q.includes('原因') ? '。详细原因可查看诊断页。' : '')
   }
@@ -405,11 +511,11 @@ const generateCard = (q) => {
     return {
       title: store.selectedUnit.name + ' · 当前报警统计',
       stat: '待处理 ' + uh + ' 条',
-      statColor: uh > 0 ? '#ef4444' : '#22c55e',
+      statColor: uh > 0 ? '#ef4444' : '#34d399',
       body: `<div class="ai-mt"><span>一级报警</span><strong style="color:#ef4444">${l1} 条</strong></div>
-<div class="ai-mt"><span>二级报警</span><strong style="color:#f59e0b">${l2} 条</strong></div>
-<div class="ai-mt"><span>智能预警</span><strong style="color:#06b6d4">${l3} 条</strong></div>
-<div class="ai-mt"><span>未处理合计</span><strong style="color:${uh > 0 ? '#ef4444' : '#22c55e'}">${uh} 条</strong></div>`,
+<div class="ai-mt"><span>二级报警</span><strong style="color:#fbbf24">${l2} 条</strong></div>
+<div class="ai-mt"><span>智能预警</span><strong style="color:#22d3ee">${l3} 条</strong></div>
+<div class="ai-mt"><span>未处理合计</span><strong style="color:${uh > 0 ? '#ef4444' : '#34d399'}">${uh} 条</strong></div>`,
       ok: l1 > 0 ? '⚠️ 当前 ' + l1 + ' 条一级报警需立即处置' : '系统无一级报警'
     }
   }
@@ -420,7 +526,7 @@ const generateCard = (q) => {
     return {
       title: u.name + ' · 实时负荷与运行参数',
       stat: '当前负荷 ' + u.base.load + ' MW',
-      statColor: '#22c55e',
+      statColor: '#34d399',
       body: `<div class="ai-mt"><span>当前负荷</span><strong>${u.base.load} MW</strong></div>
 <div class="ai-mt"><span>主汽压力</span><strong>${u.base.press} MPa</strong></div>
 <div class="ai-mt"><span>主汽温度</span><strong>${u.base.temp} ℃</strong></div>
@@ -440,7 +546,7 @@ const generateCard = (q) => {
   return {
     title: '查询结果',
     stat: '已分析',
-    statColor: '#22c55e',
+    statColor: '#34d399',
     body: `<div class="ai-mt"><span>查询</span><strong>${q}</strong></div>
 <div class="ai-mt"><span>匹配度</span><strong>92%</strong></div>
 <div class="ai-mt"><span>建议</span><strong>切换功能模块或精确输入设备名</strong></div>`,
@@ -461,115 +567,180 @@ const generateChart = (q) => {
   return null
 }
 
-onMounted(() => nextTick(() => renderAllCharts()))
-onUnmounted(() => Object.values(charts).forEach(c => c?.dispose()))
+const rz = () => Object.values(charts).forEach(c => c?.resize())
+onMounted(() => { nextTick(() => renderAllCharts()); window.addEventListener('resize', rz) })
+onUnmounted(() => { window.removeEventListener('resize', rz); Object.values(charts).forEach(c => c?.dispose()) })
 </script>
 
 <style scoped>
-.ai-page { position: fixed; inset: 0; background: #0a0e17; display: flex; flex-direction: column; z-index: 100; color: #e2e8f0; }
+.ai-page { position: fixed; inset: 0; background: #04060a; display: flex; flex-direction: column; z-index: 100; color: #c8e4ff; }
 
 /* 顶栏（深色） */
-.ai-top { display: flex; align-items: center; padding: 0 24px; height: 48px; background: #0d1117; border-bottom: 0.5px solid #1e293b; }
-.ai-top-tt { font-size: 15px; font-weight: 600; color: #e2e8f0; }
-.ai-top-r { margin-left: auto; display: flex; align-items: center; gap: 16px; font-size: 12px; color: #94a3b8; }
-.ai-status { display: flex; align-items: center; gap: 6px; color: #22c55e; font-weight: 500; }
-.ai-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+.ai-top { display: flex; align-items: center; padding: 0 24px; height: 48px; background: #081320; border-bottom: 0.5px solid rgba(62,170,255,0.18); }
+.ai-top-tt { font-size: 15px; font-weight: 600; color: #c8e4ff; }
+.ai-back-btn { color: #8fb0cf; margin-right: 8px; }
+.ai-back-btn:hover { color: #5fb3ff; }
+.ai-top-r { margin-left: auto; display: flex; align-items: center; gap: 16px; font-size: 12px; color: #8fb0cf; }
+.ai-status { display: flex; align-items: center; gap: 6px; color: #34d399; font-weight: 500; }
+.ai-dot { width: 8px; height: 8px; border-radius: 50%; background: #34d399; box-shadow: 0 0 6px #34d399; }
 .ai-user { display: flex; align-items: center; gap: 4px; color: #cbd5e1; }
 
 .ai-body { flex: 1; display: grid; grid-template-columns: 260px 1fr; min-height: 0; }
 
 /* 左侧（深色） */
-.ai-sb { background: #0d1117; border-right: 0.5px solid #1e293b; display: flex; flex-direction: column; }
+.ai-sb { background: #040810; border-right: 0.5px solid rgba(62,170,255,0.12); display: flex; flex-direction: column; }
 .ai-sb-top { padding: 14px 14px 6px; }
-.ai-new-btn { width: 100%; background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none; }
+.ai-new-btn { width: 100%; background: linear-gradient(135deg, #3eaaff, #22d3ee); border: none; }
 .ai-sb-search { padding: 6px 14px 10px; }
-.ai-sb-search :deep(.el-input__wrapper) { background: #111827; box-shadow: 0 0 0 0.5px #1e293b inset; }
-.ai-sb-search :deep(.el-input__inner) { color: #e2e8f0; }
-.ai-sb-search :deep(.el-input__inner::placeholder) { color: #64748b; }
+.ai-sb-search :deep(.el-input__wrapper) { background: rgba(8,20,40,0.7); box-shadow: 0 0 0 0.5px rgba(62,170,255,0.12) inset; }
+.ai-sb-search :deep(.el-input__inner) { color: #c8e4ff; }
+.ai-sb-search :deep(.el-input__inner::placeholder) { color: #8fb0cf; }
 .ai-sb-list { flex: 1; overflow-y: auto; padding: 4px 8px 14px; }
-.ai-sb-g { font-size: 11px; color: #64748b; font-weight: 600; padding: 10px 8px 4px; }
+.ai-sb-g { font-size: 11px; color: #8fb0cf; font-weight: 600; padding: 10px 8px 4px; }
 .ai-sb-i { padding: 10px 12px; border-radius: 8px; cursor: pointer; transition: all 0.15s; }
-.ai-sb-i:hover { background: #1a2332; }
-.ai-sb-i.on { background: rgba(59,130,246,0.15); }
+.ai-sb-i:hover { background: rgba(62,170,255,0.1); }
+.ai-sb-i.on { background: rgba(62,170,255,0.15); }
 .ai-sb-i-t { font-size: 13px; color: #cbd5e1; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ai-sb-i.on .ai-sb-i-t { color: #e2e8f0; }
+.ai-sb-i.on .ai-sb-i-t { color: #c8e4ff; }
 
 /* 主区（深色） */
 .ai-main { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-.ai-mh { display: flex; align-items: center; padding: 14px 24px; border-bottom: 0.5px solid #1e293b; gap: 12px; }
-.ai-mh-tt { font-size: 16px; font-weight: 600; color: #e2e8f0; }
+.ai-mh { display: flex; align-items: center; padding: 14px 24px; background: #081320; border-bottom: 0.5px solid rgba(62,170,255,0.18); gap: 12px; }
+.ai-mh-tt { font-size: 16px; font-weight: 600; color: #c8e4ff; }
 .ai-mh-tag { display: flex; gap: 6px; }
-.ai-mh-r { margin-left: auto; color: #94a3b8; }
+.ai-mh-r { margin-left: auto; color: #8fb0cf; }
 
 /* 8 个功能模块 */
-.ai-fns { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; padding: 8px 24px; background: #0a0e17; border-bottom: 0.5px solid #1e293b; }
-.ai-fn-i { background: #161d2a; border: 0.5px solid #1e293b; border-radius: 8px; padding: 8px 6px; cursor: pointer; text-align: center; transition: 0.15s; }
-.ai-fn-i:hover { border-color: #3b82f6; background: rgba(59,130,246,0.08); }
-.ai-fn-i.on { border-color: #3b82f6; background: rgba(59,130,246,0.18); box-shadow: 0 0 0 1px #3b82f6; }
+.ai-fns { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; padding: 8px 24px; background: #061224; border-bottom: 0.5px solid rgba(62,170,255,0.12); }
+.ai-fn-i { background: #161d2a; border: 0.5px solid rgba(62,170,255,0.12); border-radius: 8px; padding: 8px 6px; cursor: pointer; text-align: center; transition: 0.15s; }
+.ai-fn-i:hover { border-color: #3eaaff; background: rgba(62,170,255,0.08); }
+.ai-fn-i.on { border-color: #3eaaff; background: rgba(62,170,255,0.18); box-shadow: 0 0 0 1px #3eaaff; }
 .ai-fn-ic { font-size: 18px; margin-bottom: 2px; }
 .ai-fn-lb { font-size: 11px; color: #cbd5e1; font-weight: 500; }
-.ai-fn-i.on .ai-fn-lb { color: #60a5fa; }
+.ai-fn-i.on .ai-fn-lb { color: #5fb3ff; }
 
 /* 模式提示 */
-.ai-mode-hint { display: flex; align-items: center; gap: 8px; padding: 6px 24px; background: rgba(59,130,246,0.08); border-bottom: 0.5px solid #1e293b; font-size: 12px; color: #94a3b8; }
-.ai-mode-hint .el-icon { color: #3b82f6; }
+.ai-mode-hint { display: flex; align-items: center; gap: 8px; padding: 6px 24px; background: rgba(62,170,255,0.08); border-bottom: 0.5px solid rgba(62,170,255,0.12); font-size: 12px; color: #8fb0cf; }
+.ai-mode-hint .el-icon { color: #3eaaff; }
 
 /* 消息列表 */
-.ai-msgs { flex: 1; overflow-y: auto; padding: 18px 24px; background: #0a0e17; min-height: 0; }
+.ai-msgs { flex: 1; overflow-y: auto; padding: 18px 24px; background: #061224; min-height: 0; }
 .ai-msg { margin-bottom: 14px; max-width: 92%; }
 .ai-msg.bot { margin-right: auto; }
 .ai-msg.usr { margin-left: auto; }
 
 /* 思考过程（深色） */
-.ai-thinking { background: #1a2332; border: 0.5px solid #2a3544; border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; }
+.ai-thinking { background: rgba(62,170,255,0.1); border: 0.5px solid #2a3544; border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; }
 .ai-th-h { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 12px; color: #a78bfa; font-weight: 500; }
 .ai-th-fire { color: #a78bfa; }
 .ai-th-arrow { margin-left: auto; }
 .ai-th-c { margin-top: 6px; padding-top: 6px; border-top: 0.5px dashed #2a3544; font-size: 12px; color: #c4b5fd; line-height: 1.6; }
 
 /* 报告卡片（深色） */
-.ai-card { background: #111827; border: 0.5px solid #1e293b; border-radius: 10px; padding: 14px 16px; }
-.ai-card-h { display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 0.5px solid #1e293b; margin-bottom: 10px; }
-.ai-card-title { font-size: 14px; font-weight: 600; color: #e2e8f0; }
-.ai-card-stat { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #22c55e; }
+.ai-card { background: rgba(8,20,40,0.7); border: 0.5px solid rgba(62,170,255,0.12); border-radius: 10px; padding: 14px 16px; }
+.ai-card-h { display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 0.5px solid rgba(62,170,255,0.12); margin-bottom: 10px; }
+.ai-card-title { font-size: 14px; font-weight: 600; color: #c8e4ff; }
+.ai-card-stat { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #34d399; }
 .ai-cs-dot { width: 8px; height: 8px; border-radius: 50%; }
 .ai-card-c { font-size: 13px; color: #cbd5e1; line-height: 1.8; }
 .ai-card-c :deep(.ai-mt) { display: flex; justify-content: space-between; padding: 4px 0; }
-.ai-card-c :deep(.ai-mt span) { color: #94a3b8; }
-.ai-card-c :deep(.ai-mt strong) { color: #e2e8f0; font-weight: 600; }
-.ai-card-ok { margin-top: 10px; padding-top: 8px; border-top: 0.5px solid #1e293b; font-size: 13px; color: #22c55e; display: flex; align-items: center; gap: 4px; font-weight: 500; }
+.ai-card-c :deep(.ai-mt span) { color: #8fb0cf; }
+.ai-card-c :deep(.ai-mt strong) { color: #c8e4ff; font-weight: 600; }
+.ai-card-ok { margin-top: 10px; padding-top: 8px; border-top: 0.5px solid rgba(62,170,255,0.12); font-size: 13px; color: #34d399; display: flex; align-items: center; gap: 4px; font-weight: 500; }
 
 /* 趋势图（深色） */
-.ai-chart { background: #0a0e17; border: 0.5px solid #1e293b; border-radius: 10px; padding: 12px 16px; margin-top: 8px; }
+.ai-chart { background: #061224; border: 0.5px solid rgba(62,170,255,0.12); border-radius: 10px; padding: 12px 16px; margin-top: 8px; }
 .ai-chart-h { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-.ai-chart-l { font-size: 12px; color: #94a3b8; display: flex; align-items: center; gap: 4px; }
-.ai-chart-id { color: #64748b; font-family: monospace; }
-.ai-chart-tt { font-size: 14px; font-weight: 600; color: #e2e8f0; margin: 0 12px; }
-.ai-chart-c { width: 100%; height: 320px; background: #0a0e17; }
+.ai-chart-l { font-size: 12px; color: #8fb0cf; display: flex; align-items: center; gap: 4px; }
+.ai-chart-id { color: #8fb0cf; font-family: monospace; }
+.ai-chart-tt { font-size: 14px; font-weight: 600; color: #c8e4ff; margin: 0 12px; }
+.ai-chart-c { width: 100%; height: 320px; background: #061224; }
 
 /* 文本消息（深色） */
-.ai-text { background: #1a2332; padding: 10px 14px; border-radius: 8px; font-size: 13px; color: #e2e8f0; line-height: 1.7; border: 0.5px solid #2a3544; }
-.ai-msg.usr .ai-text { background: rgba(59,130,246,0.15); border-color: #3b82f6; color: #e2e8f0; }
+.ai-text { background: rgba(62,170,255,0.1); padding: 10px 14px; border-radius: 8px; font-size: 13px; color: #c8e4ff; line-height: 1.7; border: 0.5px solid #2a3544; }
+.ai-msg.usr .ai-text { background: rgba(62,170,255,0.15); border-color: #3eaaff; color: #c8e4ff; }
 
 /* 你可能想问 */
-.ai-quick-q { padding: 6px 24px; background: rgba(34,197,94,0.05); border-top: 0.5px solid #1e293b; }
-.ai-quick-q-t { font-size: 11px; color: #22c55e; margin-bottom: 4px; font-weight: 500; }
+.ai-quick-q { padding: 6px 24px; background: rgba(34,197,94,0.05); border-top: 0.5px solid rgba(62,170,255,0.12); }
+.ai-quick-q-t { font-size: 11px; color: #34d399; margin-bottom: 4px; font-weight: 500; }
 .ai-quick-q-l { display: flex; flex-wrap: wrap; gap: 6px; }
 .ai-qq { padding: 4px 12px; background: rgba(34,197,94,0.1); border: 0.5px solid rgba(34,197,94,0.3); border-radius: 16px; font-size: 11px; color: #86efac; cursor: pointer; transition: all 0.15s; }
-.ai-qq:hover { border-color: #22c55e; background: rgba(34,197,94,0.2); color: #bbf7d0; }
+.ai-qq:hover { border-color: #34d399; background: rgba(34,197,94,0.2); color: #bbf7d0; }
 
 /* 模板 */
-.ai-templates { display: flex; gap: 8px; padding: 6px 24px; background: #0a0e17; border-top: 0.5px solid #1e293b; }
-.ai-tpl { flex: 1; padding: 6px 10px; background: #111827; border: 0.5px solid #1e293b; border-radius: 6px; font-size: 11px; color: #cbd5e1; cursor: pointer; text-align: center; transition: all 0.15s; }
-.ai-tpl:hover { border-color: #3b82f6; color: #60a5fa; background: rgba(59,130,246,0.1); }
+.ai-templates { display: flex; gap: 8px; padding: 6px 24px; background: #061224; border-top: 0.5px solid rgba(62,170,255,0.12); }
+.ai-tpl { flex: 1; padding: 6px 10px; background: rgba(8,20,40,0.7); border: 0.5px solid rgba(62,170,255,0.12); border-radius: 6px; font-size: 11px; color: #cbd5e1; cursor: pointer; text-align: center; transition: all 0.15s; }
+.ai-tpl:hover { border-color: #3eaaff; color: #5fb3ff; background: rgba(62,170,255,0.1); }
 
 /* 输入框（深色） */
-.ai-inp { display: flex; align-items: center; gap: 8px; padding: 10px 24px; background: #0d1117; border-top: 0.5px solid #1e293b; }
-.ai-inp :deep(.el-input__wrapper) { background: #111827; box-shadow: 0 0 0 0.5px #1e293b inset; border-radius: 20px; padding: 4px 14px; }
-.ai-inp :deep(.el-input__inner) { color: #e2e8f0; }
-.ai-inp :deep(.el-input__inner::placeholder) { color: #64748b; }
-.ai-inp-ic { border-radius: 50%; width: 36px; height: 36px; padding: 0; background: #111827; border: 0.5px solid #1e293b; color: #94a3b8; }
-.ai-inp-ic:hover { border-color: #3b82f6; color: #60a5fa; }
-.ai-inp-send { border-radius: 50%; width: 36px; height: 36px; padding: 0; background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none; }
-.ai-inp-send:disabled { background: #1e293b; }
+.ai-inp { display: flex; align-items: center; gap: 8px; padding: 10px 24px; background: #081320; border-top: 0.5px solid rgba(62,170,255,0.18); }
+.ai-inp :deep(.el-input__wrapper) { background: rgba(8,20,40,0.7); box-shadow: 0 0 0 0.5px rgba(62,170,255,0.12) inset; border-radius: 20px; padding: 4px 14px; }
+.ai-inp :deep(.el-input__inner) { color: #c8e4ff; }
+.ai-inp :deep(.el-input__inner::placeholder) { color: #8fb0cf; }
+.ai-inp-ic { border-radius: 50%; width: 36px; height: 36px; padding: 0; background: rgba(8,20,40,0.7); border: 0.5px solid rgba(62,170,255,0.12); color: #8fb0cf; }
+.ai-inp-ic:hover { border-color: #3eaaff; color: #5fb3ff; }
+.ai-inp-send { border-radius: 50%; width: 36px; height: 36px; padding: 0; background: linear-gradient(135deg, #3eaaff, #22d3ee); border: none; }
+.ai-inp-send:disabled { background: rgba(62,170,255,0.12); }
+
+/* 多条件查询构建器 */
+.ai-qb { background: rgba(8,20,40,0.6); border-top: 0.5px solid rgba(62,170,255,0.12); transition: all 0.2s; }
+.ai-qb-h { display: flex; align-items: center; gap: 12px; padding: 6px 24px; flex-wrap: wrap; }
+.ai-qb-toggle { color: #3eaaff !important; font-size: 12px; }
+.ai-qb-toggle:hover { background: rgba(62,170,255,0.1) !important; }
+.ai-qb-cnt { display: inline-flex; align-items: center; justify-content: center; min-width: 16px; height: 16px; padding: 0 4px; margin-left: 4px; background: #3eaaff; color: #061224; border-radius: 8px; font-size: 10px; font-weight: 700; }
+.ai-qb-hint { font-size: 11px; color: #8fb0cf; }
+.ai-qb-body { display: flex; align-items: flex-end; gap: 12px; padding: 4px 24px 12px; flex-wrap: wrap; }
+.ai-qb-field { display: flex; flex-direction: column; gap: 4px; }
+.ai-qb-field label { font-size: 11px; color: #9fb6cf; }
+.ai-qb-tip { color: #5a7894; font-size: 10px; }
+.ai-qb-chips { width: 100%; display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+.ai-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; background: rgba(62,170,255,0.12); border: 0.5px solid rgba(62,170,255,0.3); border-radius: 14px; font-size: 11px; color: #a8d4ff; }
+.ai-chip em { cursor: pointer; font-style: normal; color: #8fb0cf; font-weight: 700; margin-left: 2px; }
+.ai-chip em:hover { color: #f87171; }
+.ai-chip-clear { cursor: pointer; background: transparent; border-color: rgba(248,113,113,0.3); color: #f87171; }
+.ai-chip-clear:hover { background: rgba(248,113,113,0.1); }
+
+/* 语音 */
+.ai-inp-ic.rec { border-color: #ef4444 !important; color: #f87171 !important; animation: vrec 1.2s infinite; }
+@keyframes vrec { 0%,100%{ box-shadow: 0 0 0 0 rgba(248,113,113,0.4);} 50%{ box-shadow: 0 0 0 6px rgba(248,113,113,0);} }
+.ai-voice-tip { font-size: 11px; color: #fbbf24; position: absolute; bottom: 48px; right: 24px; background: rgba(8,20,40,0.95); padding: 4px 10px; border-radius: 4px; border: 0.5px solid rgba(251,191,36,0.3); }
+
+/* 图表联动按钮 */
+.ai-chart-link { color: #3eaaff !important; border-color: rgba(62,170,255,0.3) !important; }
+.ai-chart-link:hover { background: rgba(62,170,255,0.12) !important; }
+
+/* 查询范围行 */
+:deep(.ai-scope) { background: rgba(62,170,255,0.06); border-radius: 4px; padding: 4px 8px !important; margin: 2px 0; }
+:deep(.ai-scope span) { color: #5fb3ff !important; }
+</style>
+
+<!-- 非 scoped 覆盖块：纯黑 + CRT 虚线方格 -->
+<style>
+/* 左侧对话栏 + 主消息区 + 功能模块区 + 模板区：纯黑+CRT网格 */
+.ai-page .ai-sb,
+.ai-page .ai-msgs,
+.ai-page .ai-fns,
+.ai-page .ai-templates {
+  background-color: #000000 !important;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(90,166,196,0.09) 0px, rgba(90,166,196,0.09) 1px, transparent 1px, transparent 28px),
+    repeating-linear-gradient(0deg,   rgba(90,166,196,0.09) 0px, rgba(90,166,196,0.09) 1px, transparent 1px, transparent 28px) !important;
+}
+/* 报告卡片 + 趋势图区域：半透明黑+弱网格 */
+.ai-page .ai-card {
+  background-color: rgba(0,0,0,0.85) !important;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(90,166,196,0.06) 0px, rgba(90,166,196,0.06) 1px, transparent 1px, transparent 28px),
+    repeating-linear-gradient(0deg,   rgba(90,166,196,0.06) 0px, rgba(90,166,196,0.06) 1px, transparent 1px, transparent 28px) !important;
+}
+.ai-page .ai-chart {
+  background-color: rgba(0,0,0,0.9) !important;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(90,166,196,0.06) 0px, rgba(90,166,196,0.06) 1px, transparent 1px, transparent 28px),
+    repeating-linear-gradient(0deg,   rgba(90,166,196,0.06) 0px, rgba(90,166,196,0.06) 1px, transparent 1px, transparent 28px) !important;
+}
+/* 图表容器纯黑 */
+.ai-page .ai-chart-c {
+  background-color: #000000 !important;
+}
 </style>

@@ -1,0 +1,562 @@
+/* ============================================================
+   HUD 科技风格组件库
+   基于 可视化素材包 设计模式
+   主色: #00d4ff (亮蓝发光) / #0a2a4a (深蓝底) / #0d4a8a (边框蓝)
+   ============================================================ */
+
+/* ---------- CSS 变量 ---------- */
+:root {
+  --hud-primary: #00d4ff;
+  --hud-primary-dim: #0a6ea8;
+  --hud-border: #0d4a8a;
+  --hud-border-glow: rgba(0, 212, 255, 0.35);
+  --hud-bg: rgba(6, 18, 36, 0.85);
+  --hud-bg-deep: rgba(3, 10, 24, 0.92);
+  --hud-text: #c8e4ff;
+  --hud-text-bright: #e8f4ff;
+  --hud-accent: #00ffcc;
+  --hud-warn: #f59e0b;
+  --hud-danger: #ef4444;
+  --hud-success: #22c55e;
+}
+
+/* ========== 1. 科技面板 (切角 + 发光边框) ==========
+   参考: (2).png / (8).png / line.png
+   特征: 四角切角45°, 蓝色渐变边框, 内部半透明深蓝底 */
+.hud-panel {
+  position: relative;
+  background: var(--hud-bg);
+  border: 1px solid var(--hud-border);
+  border-radius: 2px;
+  clip-path: polygon(
+    0 8px, 8px 0, calc(100% - 8px) 0, 100% 8px,
+    100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px)
+  );
+  padding: 12px 16px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.hud-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 2px;
+  pointer-events: none;
+  box-shadow: inset 0 0 20px rgba(0, 212, 255, 0.04),
+              0 0 12px rgba(0, 212, 255, 0.08);
+}
+.hud-panel:hover {
+  border-color: var(--hud-primary-dim);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.12), inset 0 0 30px rgba(0, 212, 255, 0.03);
+}
+
+/* 面板变体 */
+.hud-panel-sm { padding: 8px 12px; }
+.hud-panel-lg { padding: 16px 20px; }
+.hud-panel-fill {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+/* 角标装饰 (参考 1/4 的 bracket corners) */
+.hud-panel .corner-tl,
+.hud-panel .corner-tr,
+.hud-panel .corner-bl,
+.hud-panel .corner-br {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+}
+.corner-tl { top: 0; left: 0; border-top: 2px solid var(--hud-primary); border-left: 2px solid var(--hud-primary); }
+.corner-tr { top: 0; right: 0; border-top: 2px solid var(--hud-primary); border-right: 2px solid var(--hud-primary); }
+.corner-bl { bottom: 0; left: 0; border-bottom: 2px solid var(--hud-primary); border-left: 2px solid var(--hud-primary); }
+.corner-br { bottom: 0; right: 0; border-bottom: 2px solid var(--hud-primary); border-right: 2px solid var(--hud-primary); }
+
+/* ========== 2. 标题栏 (三角指示器 + 装饰线) ==========
+   参考: (3).png / (7).png
+   特征: 左侧 ▶ 三角指示器, 文字, 右侧虚线/斜线装饰 */
+.hud-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 14px;
+  background: linear-gradient(90deg, rgba(0, 100, 180, 0.25) 0%, transparent 70%);
+  border-bottom: 1px solid rgba(0, 150, 220, 0.25);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hud-text-bright);
+  letter-spacing: 1px;
+  user-select: none;
+  flex-shrink: 0;
+}
+/* 左侧三角指示器 */
+.hud-title::before {
+  content: '';
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 8px solid var(--hud-primary);
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 3px var(--hud-primary));
+}
+/* 右侧装饰线 */
+.hud-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--hud-border) 0%, transparent 80%);
+  margin-left: 10px;
+  opacity: 0.5;
+}
+
+/* 标题栏变体 */
+.hud-title-center {
+  justify-content: center;
+}
+.hud-title-center::before {
+  display: none;
+}
+.hud-title-center::after {
+  display: none;
+}
+.hud-title-sm {
+  height: 28px;
+  font-size: 12px;
+  padding: 0 10px;
+}
+.hud-title-lg {
+  height: 40px;
+  font-size: 15px;
+  letter-spacing: 2px;
+}
+
+/* 带计数后缀的标题 */
+.hud-title .title-count {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--hud-primary);
+  font-family: 'Courier New', monospace;
+  padding: 1px 8px;
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 2px;
+  background: rgba(0, 212, 255, 0.06);
+}
+
+/* ========== 3. 六边形图标容器 ==========
+   参考: (6).png / icon.png
+   特征: 六边形发光边框, 内部图标/文字, 渐变填充 */
+.hud-hex {
+  position: relative;
+  width: 52px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background: linear-gradient(135deg, rgba(0, 80, 160, 0.5) 0%, rgba(0, 40, 90, 0.7) 100%);
+  border: none;
+  flex-shrink: 0;
+}
+.hud-hex::before {
+  content: '';
+  position: absolute;
+  inset: 1.5px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background: linear-gradient(135deg, rgba(0, 120, 200, 0.3) 0%, rgba(0, 50, 110, 0.5) 100%);
+  z-index: -1;
+}
+.hud-hex::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.25), inset 0 0 8px rgba(0, 212, 255, 0.08);
+  pointer-events: none;
+}
+.hud-hex-icon {
+  font-size: 20px;
+  filter: drop-shadow(0 0 4px var(--hud-primary));
+  z-index: 1;
+}
+.hud-hex-label {
+  position: absolute;
+  bottom: -18px;
+  font-size: 9px;
+  color: var(--hud-text);
+  white-space: nowrap;
+  text-align: center;
+  width: 100%;
+  opacity: 0.8;
+}
+
+/* 六边形尺寸 */
+.hud-hex-xs { width: 36px; height: 40px; }
+.hud-hex-xs .hud-hex-icon { font-size: 14px; }
+.hud-hex-sm { width: 44px; height: 49px; }
+.hud-hex-sm .hud-hex-icon { font-size: 17px; }
+.hud-hex-lg { width: 64px; height: 71px; }
+.hud-hex-lg .hud-hex-icon { font-size: 26px; }
+
+/* 六边形状态色 */
+.hud-hex.ok { background: linear-gradient(135deg, rgba(0, 140, 80, 0.4) 0%, rgba(0, 70, 40, 0.6) 100%); }
+.hud-hex.warn { background: linear-gradient(135deg, rgba(180, 130, 0, 0.4) 0%, rgba(100, 70, 0, 0.6) 100%); }
+.hud-hex.danger {
+  background: linear-gradient(135deg, rgba(200, 50, 50, 0.4) 0%, rgba(100, 20, 20, 0.6) 100%);
+  animation: hexPulse 1.5s ease-in-out infinite;
+}
+@keyframes hexPulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(239, 68, 68, 0.3); }
+  50% { box-shadow: 0 0 24px rgba(239, 68, 68, 0.6); }
+}
+
+/* ========== 4. KPI 指标卡片 ==========
+   参考: bg01/bg02 左上角指标区 */
+.hud-kpi {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(0, 60, 120, 0.2) 0%, rgba(0, 30, 70, 0.15) 100%);
+  border: 1px solid rgba(0, 140, 220, 0.2);
+  border-radius: 3px;
+  transition: all 0.3s;
+}
+.hud-kpi:hover {
+  border-color: var(--hud-primary-dim);
+  background: linear-gradient(135deg, rgba(0, 80, 150, 0.25) 0%, rgba(0, 40, 90, 0.2) 100%);
+  transform: translateY(-1px);
+}
+.hud-kpi-icon {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 17px;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+  flex-shrink: 0;
+}
+.hud-kpi-body { flex: 1; min-width: 0; }
+.hud-kpi-value {
+  font-size: 22px;
+  font-weight: 700;
+  font-family: 'Orbitron', 'Courier New', monospace;
+  line-height: 1.1;
+  color: var(--hud-text-bright);
+}
+.hud-kpi-label {
+  font-size: 11px;
+  color: var(--hud-text);
+  opacity: 0.75;
+  margin-top: 2px;
+}
+
+/* ========== 5. 数据表格 (HUD风格) ==========
+   参考: bg01 右侧列表区域 */
+.hud-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 12px;
+}
+.hud-table thead th {
+  padding: 8px 10px;
+  text-align: left;
+  color: var(--hud-primary);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(0, 150, 220, 0.25);
+  background: rgba(0, 80, 150, 0.1);
+  white-space: nowrap;
+}
+.hud-table tbody td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: var(--hud-text);
+  transition: background 0.2s;
+}
+.hud-table tbody tr:hover td {
+  background: rgba(0, 150, 220, 0.06);
+  color: var(--hud-text-bright);
+}
+.hud-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ========== 6. 全屏边框 ==========
+   参考: (5).png
+   特征: 四角 bracket + 顶部高亮横条 */
+.hud-frame {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+}
+.hud-frame::before {
+  /* 顶部高亮线 */
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--hud-primary) 20%, var(--hud-primary) 80%, transparent);
+  box-shadow: 0 0 15px var(--hud-primary), 0 0 30px rgba(0, 212, 255, 0.3);
+}
+.hud-frame .frame-corner {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border-color: var(--hud-primary);
+  border-style: solid;
+  border-width: 0;
+  opacity: 0.6;
+}
+.frame-corner.tl { top: 8px; left: 8px; border-top-width: 2px; border-left-width: 2px; }
+.frame-corner.tr { top: 8px; right: 8px; border-top-width: 2px; border-right-width: 2px; }
+.frame-corner.bl { bottom: 8px; left: 8px; border-bottom-width: 2px; border-left-width: 2px; }
+.frame-corner.br { bottom: 8px; right: 8px; border-bottom-width: 2px; border-right-width: 2px; }
+
+/* ========== 7. 分割线装饰 ==========
+   参考: (1).png / (4).png 中间区域的线条 */
+.hud-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--hud-border) 15%, var(--hud-primary) 50%, var(--hud-border) 85%, transparent 100%);
+  margin: 8px 0;
+  opacity: 0.5;
+}
+.hud-divider-h {
+  width: 1px;
+  background: linear-gradient(180deg, transparent, var(--hud-border), transparent);
+  margin: 0 8px;
+  opacity: 0.4;
+}
+
+/* 虚线分割 */
+.hud-divider-dash {
+  height: 1px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--hud-border) 0px, var(--hud-border) 4px,
+    transparent 4px, transparent 10px
+  );
+  opacity: 0.35;
+  margin: 6px 0;
+}
+
+/* ========== 8. 状态标签 ==========
+   参考: bg01/b02 中设备状态标签 */
+.hud-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  border-radius: 2px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+.hud-tag-danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.hud-tag-warn {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.hud-tag-ok {
+  background: rgba(34, 197, 94, 0.12);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.25);
+}
+.hud-tag-info {
+  background: rgba(59, 130, 246, 0.12);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+/* 状态点 */
+.hud-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.hud-dot-danger { background: #ef4444; box-shadow: 0 0 6px #ef4444; animation: dotBlink 1s infinite; }
+.hud-dot-warn { background: #f59e0b; box-shadow: 0 0 5px #f59e0b; }
+.hud-dot-ok { background: #22c55e; box-shadow: 0 0 5px #22c55e; }
+@keyframes dotBlink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ========== 9. 切换按钮组 (面板切换) ==========
+   参考: bg02 顶部导航标签风格 */
+.hud-switch {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  background: rgba(0, 40, 80, 0.4);
+  border: 1px solid rgba(0, 150, 220, 0.2);
+  border-radius: 4px;
+}
+.hud-switch-btn {
+  padding: 6px 18px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--hud-text);
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.25s;
+  letter-spacing: 0.5px;
+  position: relative;
+}
+.hud-switch-btn:hover {
+  color: var(--hud-text-bright);
+  background: rgba(0, 120, 200, 0.15);
+}
+.hud-switch-btn.active {
+  color: #fff;
+  background: linear-gradient(135deg, rgba(0, 120, 220, 0.5) 0%, rgba(0, 80, 160, 0.4) 100%);
+  border: 1px solid rgba(0, 212, 255, 0.35);
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.15), inset 0 0 12px rgba(0, 212, 255, 0.05);
+}
+
+/* ========== 10. 时间线 (告警时间线) ==========
+   参考: bg01 右下角告警列表 */
+.hud-timeline {
+  position: relative;
+  padding-left: 20px;
+}
+.hud-timeline::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg, var(--hud-primary), var(--hud-border) 80%, transparent);
+  opacity: 0.4;
+}
+.hud-timeline-item {
+  position: relative;
+  padding: 8px 0 8px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+.hud-timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -15px;
+  top: 16px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid var(--hud-primary);
+  background: var(--hud-bg-deep);
+}
+.hud-timeline-item.danger::before { border-color: var(--hud-danger); box-shadow: 0 0 6px var(--hud-danger); }
+.hud-timeline-item.warn::before { border-color: var(--hud-warn); }
+.hud-timeline-item.ok::before { border-color: var(--hud-success); }
+
+/* ========== 11. 进度环 (健康度环) ==========
+   参考: (6).png 六边形内的环形进度 */
+.hud-ring {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 32px;
+  height: 32px;
+}
+.hud-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.hud-ring circle {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+.hud-ring .ring-bg { stroke: rgba(0, 150, 220, 0.15); }
+.hud-ring .ring-fg {
+  transition: stroke-dashoffset 0.8s ease;
+  filter: drop-shadow(0 0 2px currentColor);
+}
+
+/* ========== 12. 数字滚动动画 ==========
+   参考: bg01 KPI 数值变化效果 */
+.hud-num {
+  font-family: 'Orbitron', 'Courier New', monospace;
+  font-variant-numeric: tabular-nums;
+  display: inline-block;
+  min-width: 2ch;
+  text-align: right;
+}
+.hud-num-flash {
+  animation: numFlash 0.4s ease;
+}
+@keyframes numFlash {
+  0% { color: var(--hud-primary); text-shadow: 0 0 10px var(--hud-primary); }
+  100% { color: inherit; text-shadow: none; }
+}
+
+/* ========== 13. 扫描线效果 ==========
+   参考: bg01/b02 整体氛围 */
+.hud-scanline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--hud-primary), transparent);
+  opacity: 0.15;
+  animation: scanMove 4s linear infinite;
+  pointer-events: none;
+}
+@keyframes scanMove {
+  0% { top: 0; }
+  100% { top: 100%; }
+}
+
+/* ========== 14. 发光文字 ==========
+   参考: bg01 标题 "上海智慧城市可视化平台" */
+.hud-glow-text {
+  text-shadow: 0 0 8px rgba(0, 212, 255, 0.5), 0 0 20px rgba(0, 212, 255, 0.2);
+  color: var(--hud-text-bright);
+}
+.hud-glow-text-strong {
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.7), 0 0 30px rgba(0, 212, 255, 0.3), 0 0 50px rgba(0, 212, 255, 0.1);
+  color: #fff;
+}
+
+/* ========== 15. 图表容器 ==========
+   参考: bg01 中间和四周图表区域 */
+.hud-chart-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hud-chart-wrap > div {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ========== 工具类 ========== */
+.text-hud { color: var(--hud-text); }
+.text-hud-bright { color: var(--hud-text-bright); }
+.text-primary { color: var(--hud-primary); }
+.font-mono { font-family: 'Courier New', 'Consolas', monospace; }
+.glow-box {
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.1), inset 0 0 15px rgba(0, 212, 255, 0.03);
+}

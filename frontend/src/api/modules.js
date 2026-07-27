@@ -1,27 +1,10 @@
-// ========================================
-// 统一 API 客户端 —— 匹配 Spring Boot 后端（R 包装自动拆包）
-// ========================================
 import request from './request'
 
 // ======= AI 智能体 =======
 export const agentApi = {
   listSessions: (page = 1, size = 20) => request.get('/agent/sessions', { params: { page, size } }),
   getMessages: (sessionId) => request.get(`/agent/sessions/${sessionId}/messages`),
-  // 入参: { title?, mode?, unit_id?, created_by? }
-  createSession: (body = {}) => request.post('/agent/sessions', {
-    title: body.title || '新对话',
-    mode: body.mode ?? null,
-    unit_id: body.unit_id ?? null,
-    created_by: body.created_by || 'system'
-  }),
-  renameSession: (id, title) => request.put(`/agent/sessions/${id}/title`, { title }),
-  removeSession: (id) => request.delete(`/agent/sessions/${id}`),
-  // SSE 流式问答（用 fetch，不走 axios 拦截器）
-  chatStream: (body) => fetch('/api/agent/chat/stream', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
+  createSession: (title, createdBy = 'system') => request.post('/agent/sessions', { title, createdBy })
 }
 
 // ======= 报警实时 =======

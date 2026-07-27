@@ -62,12 +62,12 @@ knife4j:
 # KG 服务（操作指导转发）
 kg:
   service:
-    url: http://localhost:9000
+    url: http://localhost:8001
 
 # Agent 服务
 agent:
   service:
-    url: http://localhost:9001
+    url: http://localhost:8001
 
 # 报警统计缓存 TTL（秒）
 alarm:
