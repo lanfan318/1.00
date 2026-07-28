@@ -18,7 +18,7 @@
     </select>
 
     <select id="avgHandleMinutes" resultType="java.lang.Double">
-        SELECT COALESCE(AVG(TIMESTAMPDIFF(SECOND, occur_time, recover_time)) / 60.0, 0)
+        SELECT COALESCE(AVG(duration_seconds) / 60.0, 0)
         FROM t_alarm_history
         WHERE deleted = 0 AND recover_time IS NOT NULL
           AND occur_time BETWEEN #{start} AND #{end}
@@ -94,14 +94,14 @@
     </select>
 
     <select id="dailyTrend" resultType="com.hollysys.ppa.module.alarm.stats.vo.AlarmStatsTrendVO">
-        SELECT DATE_FORMAT(occur_time, '%Y-%m-%d') AS date,
+        SELECT CAST(occur_time AS DATE) AS date,
                SUM(CASE WHEN alarm_level = 1 THEN 1 ELSE 0 END) AS level1Count,
                SUM(CASE WHEN alarm_level = 2 THEN 1 ELSE 0 END) AS level2Count,
                SUM(CASE WHEN alarm_level = 3 THEN 1 ELSE 0 END) AS level3Count,
                COUNT(1) AS totalCount
         FROM t_alarm_history
         WHERE deleted = 0 AND occur_time BETWEEN #{start} AND #{end}
-        GROUP BY DATE_FORMAT(occur_time, '%Y-%m-%d')
+        GROUP BY CAST(occur_time AS DATE)
         ORDER BY date
     </select>
 

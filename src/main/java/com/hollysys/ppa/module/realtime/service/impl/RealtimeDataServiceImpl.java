@@ -21,10 +21,10 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
- * 实时数据 Service 实现
- * 查询 ts_measure_point 时序表的最新数据，结合 AI 算法做异常标记
+ * 实时数据 Service 实现（批量查询优化，消除 N+1）
  */
 @Slf4j
 @Service
@@ -36,49 +36,60 @@ public class RealtimeDataServiceImpl implements RealtimeDataService {
     private final DimUnitMapper dimUnitMapper;
     private final AlarmRealtimeMapper alarmRealtimeMapper;
 
-    private static final DateTimeFormatter DT_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final int MAX_POINTS = 50;
 
     @Override
     public List<RealtimePointVO> getLatestValues(Long unitId, List<Long> pointIds) {
+        // 1. 批量加载测点信息
         if (pointIds == null || pointIds.isEmpty()) {
-            // 没有指定测点则取该机组全部测点
             List<DimMeasurePoint> all = measurePointMapper.selectList(
                     new LambdaQueryWrapper<DimMeasurePoint>()
                             .eq(DimMeasurePoint::getUnitId, unitId)
-                            .last("LIMIT 50"));
-            pointIds = all.stream().map(DimMeasurePoint::getId).toList();
+                            .last("LIMIT " + MAX_POINTS));
+            pointIds = all.stream().map(DimMeasurePoint::getId).collect(Collectors.toList());
         }
+        if (pointIds.isEmpty()) return List.of();
+
+        Map<Long, DimMeasurePoint> pointMap = measurePointMapper.selectBatchIds(pointIds).stream()
+                .collect(Collectors.toMap(DimMeasurePoint::getId, p -> p));
+
+        // 2. 批量查询时序数据（一条 SQL 查所有测点最新值）
+        List<Map<String, Object>> tsRows = batchQueryLastTwoValues(unitId, pointIds);
+
+        // 3. 批量查询报警状态
+        Set<Long> alarmingPointIds = alarmRealtimeMapper.selectList(
+                new LambdaQueryWrapper<AlarmRealtime>()
+                        .in(AlarmRealtime::getMeasurePointId, pointIds)
+                        .eq(AlarmRealtime::getSuppressed, 0)
+                        .select(AlarmRealtime::getMeasurePointId))
+                .stream().map(AlarmRealtime::getMeasurePointId).collect(Collectors.toSet());
+
+        // 4. 组装结果
+        Map<Long, List<Map<String, Object>>> groupedTs = tsRows.stream()
+                .collect(Collectors.groupingBy(r -> (Long) r.get("measure_point_id")));
 
         List<RealtimePointVO> result = new ArrayList<>();
         for (Long pid : pointIds) {
-            RealtimePointVO vo = buildPointVO(unitId, pid);
-            if (vo != null) result.add(vo);
+            DimMeasurePoint mp = pointMap.get(pid);
+            if (mp == null) continue;
+            List<Map<String, Object>> rows = groupedTs.getOrDefault(pid, List.of());
+            if (rows.isEmpty()) continue;
+            result.add(buildVO(mp, rows, alarmingPointIds.contains(pid)));
         }
         return result;
     }
 
     @Override
     public RealtimeCurveVO getRealtimeCurve(Long unitId, String deviceCode, String curveType, Integer seconds) {
-        int secs = seconds != null ? Math.min(seconds, 3600) : 300; // 默认 5 分钟，最大 1 小时
+        int secs = seconds != null ? Math.min(seconds, 3600) : 300;
         LocalDateTime start = LocalDateTime.now().minusSeconds(secs);
 
-        // 从 ts_measure_point 查最近 N 秒的数据
-        String sql = "SELECT mp.point_code, mp.point_name, ts.value, ts.ts " +
-                     "FROM ts_measure_point ts " +
-                     "JOIN dim_measure_point mp ON ts.measure_point_id = mp.id " +
-                     "WHERE ts.unit_id = ? AND mp.system_id = " +
-                     "(SELECT id FROM dim_system WHERE system_code = ? LIMIT 1) " +
-                     "AND ts.ts >= ? ORDER BY ts.ts ASC";
-
-        // 简化查询：按时间和机组取数据
-        String simpleSql = "SELECT ts.ts, ts.value FROM ts_measure_point ts " +
-                           "WHERE ts.unit_id = ? AND ts.ts >= ? ORDER BY ts.ts ASC LIMIT 1000";
-
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList(simpleSql, unitId, start);
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(
+                "SELECT ts, value FROM ts_measure_point WHERE unit_id = ? AND ts >= ? ORDER BY ts ASC LIMIT 1000",
+                unitId, start);
 
         List<RealtimeCurveVO.CurvePoint> points = new ArrayList<>();
         List<BigDecimal> values = new ArrayList<>();
-
         for (Map<String, Object> row : rows) {
             RealtimeCurveVO.CurvePoint p = new RealtimeCurveVO.CurvePoint();
             p.setTimestamp(row.get("ts").toString());
@@ -88,49 +99,8 @@ public class RealtimeDataServiceImpl implements RealtimeDataService {
             values.add(val);
         }
 
-        // 统计
-        RealtimeCurveVO.CurveStats stats = new RealtimeCurveVO.CurveStats();
-        if (!values.isEmpty()) {
-            stats.setMin(values.stream().min(BigDecimal::compareTo).orElse(BigDecimal.ZERO));
-            stats.setMax(values.stream().max(BigDecimal::compareTo).orElse(BigDecimal.ZERO));
-            stats.setAvg(values.stream().reduce(BigDecimal.ZERO, BigDecimal::add)
-                    .divide(BigDecimal.valueOf(values.size()), 4, RoundingMode.HALF_UP));
-
-            // 趋势判断：最后 5 个点的变化方向
-            if (values.size() >= 5) {
-                BigDecimal first5Avg = values.subList(0, 5).stream().reduce(BigDecimal.ZERO, BigDecimal::add)
-                        .divide(BigDecimal.valueOf(5), 4, RoundingMode.HALF_UP);
-                int lastIdx = values.size();
-                BigDecimal last5Avg = values.subList(lastIdx - 5, lastIdx).stream().reduce(BigDecimal.ZERO, BigDecimal::add)
-                        .divide(BigDecimal.valueOf(5), 4, RoundingMode.HALF_UP);
-                BigDecimal diff = last5Avg.subtract(first5Avg);
-                if (diff.compareTo(BigDecimal.valueOf(0.5)) > 0) stats.setTrend("up");
-                else if (diff.compareTo(BigDecimal.valueOf(-0.5)) < 0) stats.setTrend("down");
-                else stats.setTrend("stable");
-            }
-        }
-
-        // 异常检测（3-sigma 简化版）
-        RealtimeCurveVO.AnomalyInfo anomaly = new RealtimeCurveVO.AnomalyInfo();
-        if (values.size() >= 10) {
-            BigDecimal mean = values.stream().reduce(BigDecimal.ZERO, BigDecimal::add)
-                    .divide(BigDecimal.valueOf(values.size()), 6, RoundingMode.HALF_UP);
-            BigDecimal sumSq = BigDecimal.ZERO;
-            for (BigDecimal v : values) {
-                sumSq = sumSq.add(v.subtract(mean).pow(2));
-            }
-            BigDecimal std = BigDecimal.valueOf(Math.sqrt(
-                    sumSq.divide(BigDecimal.valueOf(values.size()), 6, RoundingMode.HALF_UP).doubleValue()));
-            BigDecimal upper = mean.add(std.multiply(BigDecimal.valueOf(3)));
-
-            long anomalyCount = values.stream().filter(v -> v.compareTo(upper) > 0).count();
-            anomaly.setHasAnomaly(anomalyCount > 0);
-            anomaly.setAnomalyCount((int) anomalyCount);
-            anomaly.setDescription(anomalyCount > 0 ? "检测到 " + anomalyCount + " 个异常数据点" : "数据正常");
-        } else {
-            anomaly.setHasAnomaly(false);
-            anomaly.setDescription("数据点不足无法检测");
-        }
+        RealtimeCurveVO.CurveStats stats = buildStats(values);
+        RealtimeCurveVO.AnomalyInfo anomaly = buildAnomalyInfo(values);
 
         RealtimeCurveVO vo = new RealtimeCurveVO();
         vo.setUnitId(unitId);
@@ -139,7 +109,6 @@ public class RealtimeDataServiceImpl implements RealtimeDataService {
         vo.setPoints(points);
         vo.setStats(stats);
         vo.setAnomalyInfo(anomaly);
-
         return vo;
     }
 
@@ -147,66 +116,69 @@ public class RealtimeDataServiceImpl implements RealtimeDataService {
     public SnapshotVO getSnapshot(Long unitId) {
         DimUnit unit = dimUnitMapper.selectById(unitId);
 
-        // 获取该机组所有测点
         List<DimMeasurePoint> allPoints = measurePointMapper.selectList(
                 new LambdaQueryWrapper<DimMeasurePoint>()
                         .eq(DimMeasurePoint::getUnitId, unitId)
-                        .last("LIMIT 100"));
-
-        List<RealtimePointVO> pointVOs = new ArrayList<>();
-        int online = 0, anomaly = 0;
-        double totalHealth = 0;
-
-        for (DimMeasurePoint mp : allPoints) {
-            RealtimePointVO vo = buildPointVO(unitId, mp.getId());
-            if (vo != null) {
-                pointVOs.add(vo);
-                online++;
-                if (Boolean.TRUE.equals(vo.getAnomaly())) anomaly++;
-                if (vo.getHealthScore() != null) totalHealth += vo.getHealthScore().doubleValue();
-            }
+                        .last("LIMIT " + MAX_POINTS));
+        if (allPoints.isEmpty()) {
+            SnapshotVO vo = new SnapshotVO();
+            vo.setUnitId(unitId);
+            vo.setUnitName(unit != null ? unit.getUnitName() : "未知");
+            return vo;
         }
 
-        // 查询当前报警数
-        Long alarmCount = alarmRealtimeMapper.selectCount(
+        List<Long> pointIds = allPoints.stream().map(DimMeasurePoint::getId).collect(Collectors.toList());
+        List<RealtimePointVO> pointVOs = getLatestValues(unitId, pointIds);
+
+        int anomaly = (int) pointVOs.stream().filter(p -> Boolean.TRUE.equals(p.getAnomaly())).count();
+        long alarmCount = alarmRealtimeMapper.selectCount(
                 new LambdaQueryWrapper<AlarmRealtime>()
                         .eq(AlarmRealtime::getUnitId, unitId)
                         .eq(AlarmRealtime::getSuppressed, 0));
+        double avgHealth = pointVOs.stream()
+                .filter(p -> p.getHealthScore() != null)
+                .mapToDouble(p -> p.getHealthScore().doubleValue()).average().orElse(100.0);
 
         SnapshotVO vo = new SnapshotVO();
         vo.setUnitId(unitId);
         vo.setUnitName(unit != null ? unit.getUnitName() : "未知");
         vo.setTotalPoints(allPoints.size());
-        vo.setOnlinePoints(online);
+        vo.setOnlinePoints(pointVOs.size());
         vo.setAnomalyPoints(anomaly);
-        vo.setAlarmCount(alarmCount != null ? alarmCount.intValue() : 0);
-        vo.setOverallHealth(online > 0 ? Math.round(totalHealth / online * 10.0) / 10.0 : 100.0);
+        vo.setAlarmCount((int) alarmCount);
+        vo.setOverallHealth(Math.round(avgHealth * 10.0) / 10.0);
         vo.setPoints(pointVOs);
 
         log.info("机组快照: unit={}, points={}, online={}, anomaly={}, alarms={}",
-                unitId, allPoints.size(), online, anomaly, alarmCount);
-
+                unitId, allPoints.size(), pointVOs.size(), anomaly, alarmCount);
         return vo;
     }
 
-    // ─── 工具方法 ───
+    // ─── 批量查询工具 ───
 
-    private RealtimePointVO buildPointVO(Long unitId, Long pointId) {
-        DimMeasurePoint mp = measurePointMapper.selectById(pointId);
-        if (mp == null) return null;
+    /** 一次 SQL 查出所有测点的最新 2 条数据 */
+    private List<Map<String, Object>> batchQueryLastTwoValues(Long unitId, List<Long> pointIds) {
+        if (pointIds.isEmpty()) return List.of();
+        String inClause = pointIds.stream().map(String::valueOf).collect(Collectors.joining(","));
+        String sql = "SELECT t.measure_point_id, t.ts, t.value, t.quality_flag " +
+                     "FROM ts_measure_point t " +
+                     "INNER JOIN (SELECT measure_point_id, MAX(ts) AS max_ts FROM ts_measure_point " +
+                     "WHERE unit_id = ? AND measure_point_id IN (" + inClause + ") GROUP BY measure_point_id) latest " +
+                     "ON t.measure_point_id = latest.measure_point_id AND t.ts = latest.max_ts " +
+                     "UNION ALL " +
+                     "SELECT t.measure_point_id, t.ts, t.value, t.quality_flag " +
+                     "FROM ts_measure_point t " +
+                     "INNER JOIN (SELECT measure_point_id, MAX(ts) AS max_ts FROM ts_measure_point " +
+                     "WHERE unit_id = ? AND measure_point_id IN (" + inClause + ") GROUP BY measure_point_id) latest2 " +
+                     "ON t.measure_point_id = latest2.measure_point_id AND t.ts < latest2.max_ts " +
+                     "ORDER BY measure_point_id, ts DESC LIMIT 2";
+        return jdbcTemplate.queryForList(sql, unitId, unitId);
+    }
 
-        // 查最新一条时序数据
-        String sql = "SELECT ts, value, quality_flag FROM ts_measure_point " +
-                     "WHERE measure_point_id = ? AND unit_id = ? " +
-                     "ORDER BY ts DESC LIMIT 2";
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, pointId, unitId);
-
-        if (rows.isEmpty()) return null;
-
+    private RealtimePointVO buildVO(DimMeasurePoint mp, List<Map<String, Object>> rows, boolean hasAlarm) {
         Map<String, Object> latest = rows.get(0);
         BigDecimal currentValue = (BigDecimal) latest.get("value");
 
-        // 计算趋势（和前一个值比较）
         String trend = "stable";
         BigDecimal delta = BigDecimal.ZERO;
         if (rows.size() >= 2) {
@@ -216,32 +188,19 @@ public class RealtimeDataServiceImpl implements RealtimeDataService {
             else if (delta.compareTo(BigDecimal.valueOf(-0.01)) < 0) trend = "down";
         }
 
-        // 简单异常检测：超出量程
         boolean isAnomaly = false;
-        if (mp.getRangeLow() != null && currentValue.compareTo(BigDecimal.valueOf(mp.getRangeLow())) < 0) {
-            isAnomaly = true;
-        }
-        if (mp.getRangeHigh() != null && currentValue.compareTo(BigDecimal.valueOf(mp.getRangeHigh())) > 0) {
-            isAnomaly = true;
-        }
+        if (mp.getRangeLow() != null && currentValue.compareTo(BigDecimal.valueOf(mp.getRangeLow())) < 0) isAnomaly = true;
+        if (mp.getRangeHigh() != null && currentValue.compareTo(BigDecimal.valueOf(mp.getRangeHigh())) > 0) isAnomaly = true;
 
-        // 计算健康评分（简化：在量程范围内则为高分）
         BigDecimal health = BigDecimal.valueOf(100);
         if (mp.getRangeHigh() != null && mp.getRangeLow() != null) {
             double range = mp.getRangeHigh() - mp.getRangeLow();
             double mid = (mp.getRangeHigh() + mp.getRangeLow()) / 2;
-            double deviation = Math.abs(currentValue.doubleValue() - mid);
-            health = BigDecimal.valueOf(Math.max(0, 100 - (deviation / range * 50)));
+            health = BigDecimal.valueOf(Math.max(0, 100 - Math.abs(currentValue.doubleValue() - mid) / range * 50));
         }
 
-        // 查是否有未抑制报警
-        Long alarmCount = alarmRealtimeMapper.selectCount(
-                new LambdaQueryWrapper<AlarmRealtime>()
-                        .eq(AlarmRealtime::getMeasurePointId, pointId)
-                        .eq(AlarmRealtime::getSuppressed, 0));
-
         RealtimePointVO vo = new RealtimePointVO();
-        vo.setPointId(pointId);
+        vo.setPointId(mp.getId());
         vo.setPointCode(mp.getPointCode());
         vo.setPointName(mp.getPointName());
         vo.setCurrentValue(currentValue);
@@ -251,9 +210,49 @@ public class RealtimeDataServiceImpl implements RealtimeDataService {
         vo.setTrend(trend);
         vo.setDelta(delta);
         vo.setAnomaly(isAnomaly);
-        vo.setAlarmLevel(alarmCount > 0 ? 1 : null);
+        vo.setAlarmLevel(hasAlarm ? 1 : null);
         vo.setHealthScore(health.setScale(1, RoundingMode.HALF_UP));
-
         return vo;
+    }
+
+    private RealtimeCurveVO.CurveStats buildStats(List<BigDecimal> values) {
+        RealtimeCurveVO.CurveStats stats = new RealtimeCurveVO.CurveStats();
+        if (!values.isEmpty()) {
+            stats.setMin(values.stream().min(BigDecimal::compareTo).orElse(BigDecimal.ZERO));
+            stats.setMax(values.stream().max(BigDecimal::compareTo).orElse(BigDecimal.ZERO));
+            stats.setAvg(values.stream().reduce(BigDecimal.ZERO, BigDecimal::add)
+                    .divide(BigDecimal.valueOf(values.size()), 4, RoundingMode.HALF_UP));
+            if (values.size() >= 5) {
+                BigDecimal first5 = avgOf(values.subList(0, 5));
+                BigDecimal last5 = avgOf(values.subList(values.size() - 5, values.size()));
+                BigDecimal diff = last5.subtract(first5);
+                if (diff.compareTo(BigDecimal.valueOf(0.5)) > 0) stats.setTrend("up");
+                else if (diff.compareTo(BigDecimal.valueOf(-0.5)) < 0) stats.setTrend("down");
+                else stats.setTrend("stable");
+            }
+        }
+        return stats;
+    }
+
+    private RealtimeCurveVO.AnomalyInfo buildAnomalyInfo(List<BigDecimal> values) {
+        RealtimeCurveVO.AnomalyInfo info = new RealtimeCurveVO.AnomalyInfo();
+        if (values.size() >= 10) {
+            BigDecimal mean = avgOf(values);
+            double variance = values.stream().mapToDouble(v -> Math.pow(v.subtract(mean).doubleValue(), 2)).average().orElse(0);
+            BigDecimal upper = mean.add(BigDecimal.valueOf(Math.sqrt(variance) * 3));
+            long count = values.stream().filter(v -> v.compareTo(upper) > 0).count();
+            info.setHasAnomaly(count > 0);
+            info.setAnomalyCount((int) count);
+            info.setDescription(count > 0 ? "检测到 " + count + " 个异常数据点" : "数据正常");
+        } else {
+            info.setHasAnomaly(false);
+            info.setDescription("数据点不足无法检测");
+        }
+        return info;
+    }
+
+    private BigDecimal avgOf(List<BigDecimal> list) {
+        return list.stream().reduce(BigDecimal.ZERO, BigDecimal::add)
+                .divide(BigDecimal.valueOf(list.size()), 6, RoundingMode.HALF_UP);
     }
 }

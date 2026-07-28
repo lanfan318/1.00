@@ -131,10 +131,12 @@ public class AlarmConfigServiceImpl implements AlarmConfigService {
         if (CollUtil.isEmpty(ids)) {
             throw new BusinessException("请选择要删除的记录");
         }
+        // 批量逻辑删除主表 + 子表
+        alarmConfigMapper.deleteBatchIds(ids);
         for (Long id : ids) {
-            delete(id);
+            alarmConfigMapper.softDeleteRulesByConfigId(id);
         }
-        log.info("批量删除报警配置: ids={}", ids);
+        log.info("批量删除报警配置: count={}", ids.size());
     }
 
     @Override
