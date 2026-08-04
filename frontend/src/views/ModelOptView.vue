@@ -418,7 +418,7 @@ onUnmounted(() => { window.removeEventListener('resize', rz); gaugeCh?.dispose()
   gap: 14px;
   height: 100%;
   overflow: hidden;
-  background-color: #030508;
+  background-color: #010204;
   position: relative;
   font-family: "SF Mono","Consolas","JetBrains Mono",monospace;
 }
@@ -442,7 +442,7 @@ onUnmounted(() => { window.removeEventListener('resize', rz); gaugeCh?.dispose()
 
 .mo-tag-hud {
   border: 1px solid rgba(90,166,196,0.2) !important;
-  background: rgba(4,10,20,0.85) !important;
+  background: rgba(2,5,10,0.595) !important;
   font-family: "SF Mono","Consolas",monospace !important;
   font-size: 11px !important;
 }
@@ -600,7 +600,7 @@ onUnmounted(() => { window.removeEventListener('resize', rz); gaugeCh?.dispose()
 
 /* ═══ 面板卡片 — 统一切角微玻璃拟态 ═══ */
 .cd {
-  background: rgba(6,12,22,0.85);
+  background: rgba(3,6,11,0.595);
   border: 1px solid rgba(90,166,196,0.12);
   border-radius: 4px;
   padding: 14px 16px;
@@ -690,7 +690,7 @@ onUnmounted(() => { window.removeEventListener('resize', rz); gaugeCh?.dispose()
 .mo-stage-dot {
   width: 30px; height: 30px;
   display: flex; align-items: center; justify-content: center;
-  background: rgba(6,12,22,0.9);
+  background: rgba(3,6,11,0.63);
   border: 1.5px solid rgba(90,166,196,0.2);
   /* 八角切角 */
   clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
@@ -769,7 +769,7 @@ onUnmounted(() => { window.removeEventListener('resize', rz); gaugeCh?.dispose()
 }
 .mo-opt-log {
   flex: 1; min-height: 0; overflow-y: auto;
-  background: rgba(4,8,16,0.5);
+  background: rgba(2,4,8,0.35);
   border: 1px solid rgba(90,166,196,0.07);
   border-radius: 3px;
   padding: 8px 10px;
@@ -831,7 +831,7 @@ onUnmounted(() => { window.removeEventListener('resize', rz); gaugeCh?.dispose()
   flex: 1;
   padding: 10px 14px;
   margin-bottom: 10px;
-  background: rgba(6,12,22,0.6);
+  background: rgba(3,6,11,0.42);
   border: 1px solid rgba(90,166,196,0.1);
   border-radius: 3px;
   /* 轻微切角 */

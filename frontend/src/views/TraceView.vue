@@ -208,21 +208,21 @@ const auditTimeline = computed(() => {
 .case-bar { flex-shrink: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .case-lbl { font-size: 13px; color: #9fb6cf; flex-shrink: 0; font-weight: 500; }
 .case-cards { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; }
-.case-card { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: linear-gradient(180deg, rgba(10,24,42,0.6), rgba(6,16,30,0.55)); border: 1px solid rgba(62,170,255,0.12); border-radius: 7px; cursor: pointer; transition: all 0.2s; min-width: 190px; position: relative; overflow: hidden; }
-.case-card:hover { border-color: rgba(62,170,255,0.35); background: linear-gradient(180deg, rgba(12,28,50,0.65), rgba(8,20,38,0.58)); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,10,30,0.3); }
+.case-card { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: linear-gradient(180deg, rgba(5,12,21,0.42), rgba(3,8,15,0.385)); border: 1px solid rgba(62,170,255,0.12); border-radius: 7px; cursor: pointer; transition: all 0.2s; min-width: 190px; position: relative; overflow: hidden; }
+.case-card:hover { border-color: rgba(62,170,255,0.35); background: linear-gradient(180deg, rgba(6,14,25,0.455), rgba(4,10,19,0.406)); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,5,15,0.21); }
 .case-card.on { border-color: #3eaaff; background: linear-gradient(180deg, rgba(18,45,80,0.5), rgba(12,30,52,0.45)); box-shadow: 0 0 20px rgba(62,170,255,0.18), inset 0 0 24px rgba(62,170,255,0.04); }
 .cc-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
 .cc-name { font-size: 13px; color: #e2e8f0; font-weight: 600; margin-bottom: 2px; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cc-dept { font-size: 11px; color: #9fb6cf; }
 .cc-conf { margin-left: auto; font-size: 15px; font-weight: 800; font-family: "SF Mono","Consolas","Orbitron",monospace; text-shadow: 0 0 10px currentColor; }
 
-.cd { background: linear-gradient(135deg, rgba(12,30,52,0.7) 0%, rgba(8,20,38,0.65) 100%); border: 1px solid rgba(62,170,255,0.16); border-radius: 7px; padding: 18px; box-shadow: 0 2px 12px rgba(0,10,30,0.3), inset 0 1px 0 rgba(62,170,255,0.06); }
+.cd { background: linear-gradient(135deg, rgba(12,30,52,0.7) 0%, rgba(4,10,19,0.455) 100%); border: 1px solid rgba(62,170,255,0.16); border-radius: 7px; padding: 18px; box-shadow: 0 2px 12px rgba(0,5,15,0.21), inset 0 1px 0 rgba(62,170,255,0.06); }
 .cd-t { font-size: 14px; font-weight: 700; color: #d4ecff; margin-bottom: 14px; display: flex; align-items: center; letter-spacing: 0.5px; }
 
 .tl { display: flex; flex-direction: column; gap: 12px; }
 .ti { display: flex; gap: 14px; }
 .tn { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; flex-shrink: 0; border: 2px solid; box-shadow: 0 0 12px currentColor; }
-.tb { flex: 1; background: linear-gradient(180deg, rgba(10,24,42,0.6), rgba(6,16,30,0.55)); border: 1px solid rgba(62,170,255,0.12); border-radius: 7px; padding: 14px 16px; transition: all 0.2s; }
+.tb { flex: 1; background: linear-gradient(180deg, rgba(5,12,21,0.42), rgba(3,8,15,0.385)); border: 1px solid rgba(62,170,255,0.12); border-radius: 7px; padding: 14px 16px; transition: all 0.2s; }
 .tb:hover { border-color: rgba(62,170,255,0.25); }
 .tm { font-weight: 700; font-size: 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
 .tm-dot { width: 7px; height: 7px; border-radius: 50%; box-shadow: 0 0 6px currentColor; }
@@ -230,10 +230,10 @@ const auditTimeline = computed(() => {
 
 .tr-concl { display: flex; flex-direction: column; overflow-y: auto; }
 .tr-links { overflow-y: auto; }
-.conclusion { background: linear-gradient(180deg, rgba(10,24,42,0.6), rgba(6,16,30,0.55)); border: 1px solid rgba(62,170,255,0.15); border-left: 3px solid #3eaaff; border-radius: 7px; padding: 16px; margin-bottom: 14px; box-shadow: 0 2px 12px rgba(0,10,30,0.2); }
+.conclusion { background: linear-gradient(180deg, rgba(5,12,21,0.42), rgba(3,8,15,0.385)); border: 1px solid rgba(62,170,255,0.15); border-left: 3px solid #3eaaff; border-radius: 7px; padding: 16px; margin-bottom: 14px; box-shadow: 0 2px 12px rgba(0,5,15,0.14); }
 .con-t { font-size: 15px; font-weight: 700; color: #3eaaff; margin-bottom: 10px; text-shadow: 0 0 8px rgba(62,170,255,0.3); }
 .con-b { font-size: 13px; color: #cbd5e1; line-height: 1.9; }
-.con-meta { background: linear-gradient(180deg, rgba(6,18,36,0.6), rgba(8,22,42,0.5)); border-radius: 7px; padding: 14px 16px; margin-bottom: 14px; border: 1px solid rgba(62,170,255,0.08); }
+.con-meta { background: linear-gradient(180deg, rgba(3,9,18,0.42), rgba(4,11,21,0.35)); border-radius: 7px; padding: 14px 16px; margin-bottom: 14px; border: 1px solid rgba(62,170,255,0.08); }
 .m-row { display: flex; justify-content: space-between; padding: 7px 0; font-size: 13px; color: #9fb6cf; border-bottom: 1px solid rgba(62,170,255,0.08); }
 .m-row:last-child { border-bottom: none; }
 .m-k { color: #8fb0cf; font-weight: 500; }
@@ -250,7 +250,7 @@ const auditTimeline = computed(() => {
 .aud-bar { flex: 1; height: 2px; margin: 0 6px; background: linear-gradient(90deg, rgba(62,170,255,0.55), rgba(62,170,255,0.12)); border-radius: 2px; }
 .aud-card {
   margin-top: 10px; padding: 12px 14px; border-radius: 8px;
-  background: linear-gradient(180deg, rgba(10,24,42,0.6), rgba(6,16,30,0.55));
+  background: linear-gradient(180deg, rgba(5,12,21,0.42), rgba(3,8,15,0.385));
   border: 1px solid rgba(62,170,255,0.12); border-top: 2px solid rgba(62,170,255,0.4);
   min-height: 150px; position: relative; transition: all 0.2s;
 }
@@ -263,7 +263,7 @@ const auditTimeline = computed(() => {
 .aud-detail { font-size: 12px; color: #aebfd2; line-height: 1.7; margin-bottom: 10px; }
 .aud-link {
   display: flex; gap: 8px; align-items: baseline; padding: 7px 10px;
-  background: rgba(6,18,36,0.55); border-radius: 6px; border: 1px solid rgba(62,170,255,0.1);
+  background: rgba(3,9,18,0.385); border-radius: 6px; border: 1px solid rgba(62,170,255,0.1);
   font-size: 11.5px;
 }
 .aud-link-k { color: #6a8caa; flex-shrink: 0; font-weight: 600; }

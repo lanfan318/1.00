@@ -147,7 +147,7 @@ onUnmounted(() => { window.removeEventListener('resize', rz); donutChart?.dispos
 .g-card {
   position: relative; padding: 18px; border-radius: 6px; overflow: hidden;
   min-height: 360px;
-  background: linear-gradient(135deg, rgba(12,30,52,0.65) 0%, rgba(8,20,38,0.7) 100%);
+  background: linear-gradient(135deg, rgba(12,30,52,0.65) 0%, rgba(4,10,19,0.49) 100%);
   border: 1px solid rgba(62,170,255,0.12);
   box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,10,30,0.4), inset 0 1px 0 rgba(62,170,255,0.06);
 }
@@ -160,8 +160,8 @@ onUnmounted(() => { window.removeEventListener('resize', rz); donutChart?.dispos
 .g-lv-dot { width: 9px; height: 9px; border-radius: 50%; }
 .g-lv { font-size: 16px; font-weight: 600; }
 .g-cnt { font-size: 12px; padding: 2px 10px; border-radius: 4px; border: 1px solid; font-weight: 600; }
-.g-d { font-size: 12px; color: #9fb6cf; line-height: 1.7; margin-bottom: 12px; padding: 10px; background: rgba(6,18,36,0.5); border-radius: 6px; border-left: 2px solid rgba(62,170,255,0.25); }
-.g-stat { display: flex; justify-content: space-around; padding: 10px 0; margin-bottom: 12px; background: rgba(6,18,36,0.4); border-radius: 6px; }
+.g-d { font-size: 12px; color: #9fb6cf; line-height: 1.7; margin-bottom: 12px; padding: 10px; background: rgba(3,9,18,0.35); border-radius: 6px; border-left: 2px solid rgba(62,170,255,0.25); }
+.g-stat { display: flex; justify-content: space-around; padding: 10px 0; margin-bottom: 12px; background: rgba(3,9,18,0.28); border-radius: 6px; }
 .g-si { text-align: center; }
 .g-sv { font-size: 22px; font-weight: 700; font-family: "SF Mono","Consolas",monospace; }
 .g-si-u { font-size: 11px; }

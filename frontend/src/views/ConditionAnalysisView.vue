@@ -480,7 +480,7 @@ onUnmounted(() => { tCh?.dispose(); gCh?.dispose() })
 
 <style scoped>
 .ca-page { display: flex; flex-direction: column; gap: 6px; height: 100%; overflow: hidden;
-  background-color: #04060a; }
+  background-color: #020305; }
 .ca-head { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
 .ca-head-l { display: flex; align-items: center; gap: 10px; }
 .ca-bar { width: 4px; height: 18px; background: linear-gradient(180deg, #3eaaff, #22d3ee); border-radius: 2px; box-shadow: 0 0 8px rgba(62,170,255,0.5); }
@@ -492,7 +492,7 @@ onUnmounted(() => { tCh?.dispose(); gCh?.dispose() })
 .ca-kpi {
   position: relative; display: flex; align-items: center; gap: 10px;
   padding: 8px 12px; overflow: hidden;
-  background: rgba(4,6,10,0.85);
+  background: rgba(2,3,5,0.595);
   border: 1px solid rgba(90,166,196,0.15); border-radius: 5px;
   box-shadow: none;
 }
@@ -511,7 +511,7 @@ onUnmounted(() => { tCh?.dispose(); gCh?.dispose() })
   flex-direction: column;
   position: relative;
   min-height: 0;
-  background: rgba(4,6,10,0.9);
+  background: rgba(2,3,5,0.63);
   border: 1px solid rgba(90,166,196,0.12);
 }
 /* 仪表盘卡片特别增强 */
@@ -638,7 +638,7 @@ onUnmounted(() => { tCh?.dispose(); gCh?.dispose() })
 /* 测点 — 紧凑 */
 .ca-meas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 6px; }
 .ca-meas { flex-shrink: 0; max-height: 24%; overflow: auto; }
-.ca-meas-i { background: rgba(4,6,10,0.7); border: 1px solid rgba(90,166,196,0.12); border-radius: 5px; padding: 6px 10px; transition: 0.2s; }
+.ca-meas-i { background: rgba(2,3,5,0.49); border: 1px solid rgba(90,166,196,0.12); border-radius: 5px; padding: 6px 10px; transition: 0.2s; }
 .ca-meas-i:hover { border-color: rgba(62,170,255,0.3); transform: translateY(-1px); }
 .ca-meas-i.over { border-color: rgba(239,68,68,0.35); }
 .ca-mi-top { display: flex; justify-content: space-between; align-items: center; }
@@ -659,7 +659,7 @@ onUnmounted(() => { tCh?.dispose(); gCh?.dispose() })
 .tg-ok { background: rgba(34, 197, 94, 0.12); color: #34d399; }
 
 /* 趋势控制条 — 紧凑 */
-.ca-ctrls { flex-shrink: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 5px 10px; background: rgba(4,6,10,0.85); border: 1px solid rgba(90,166,196,0.1); }
+.ca-ctrls { flex-shrink: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 5px 10px; background: rgba(2,3,5,0.595); border: 1px solid rgba(90,166,196,0.1); }
 .ca-ctrl { display: flex; align-items: center; gap: 4px; }
 .ca-ctrl label { font-size: 10px; color: #9fb6cf; }
 .ca-ctrl-tip { color: #5a7894; font-size: 10px; font-weight: 400; }
@@ -670,14 +670,14 @@ onUnmounted(() => { tCh?.dispose(); gCh?.dispose() })
 .ca-drill-hint { color: #5a7894; }
 .ca-ai-trend-btn { color: #3eaaff !important; border-color: rgba(62,170,255,0.3) !important; }
 .ca-chart { flex: 1; min-height: 0; position: relative; }
-.ca-drill { position: absolute; top: 40px; right: 12px; width: 240px; background: rgba(8,18,38,0.96); border: 1px solid rgba(62,170,255,0.3); border-radius: 8px; padding: 12px 14px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); z-index: 5; backdrop-filter: blur(4px); }
+.ca-drill { position: absolute; top: 40px; right: 12px; width: 240px; background: rgba(4,9,19,0.672); border: 1px solid rgba(62,170,255,0.3); border-radius: 8px; padding: 12px 14px; box-shadow: 0 8px 30px rgba(0,0,0,0.35); z-index: 5; backdrop-filter: blur(4px); }
 .ca-drill-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .ca-drill-t { font-size: 12px; font-weight: 600; color: #3eaaff; }
 .ca-drill-b { display: flex; flex-direction: column; gap: 6px; }
 .ca-dr { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; color: #9fb6cf; }
 .ca-dr b { font-family: monospace; color: #e2e8f0; font-weight: 600; }
 .ca-dr-alarm { background: rgba(248,113,113,0.06); border-radius: 4px; padding: 6px 8px; align-items: flex-start; }
-.ca-ai-trend { position: absolute; left: 10px; right: 10px; bottom: 10px; background: rgba(8,18,38,0.95); border: 1px solid rgba(62,170,255,0.25); border-radius: 8px; padding: 10px 14px; z-index: 5; max-height: 60%; overflow-y: auto; }
+.ca-ai-trend { position: absolute; left: 10px; right: 10px; bottom: 10px; background: rgba(4,9,19,0.665); border: 1px solid rgba(62,170,255,0.25); border-radius: 8px; padding: 10px 14px; z-index: 5; max-height: 60%; overflow-y: auto; }
 .ca-ai-trend-h { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #3eaaff; margin-bottom: 6px; }
 .ca-ai-trend-h .el-icon { color: #a78bfa; }
 .ca-ai-trend-b { font-size: 12px; color: #cbd5e1; line-height: 1.7; }

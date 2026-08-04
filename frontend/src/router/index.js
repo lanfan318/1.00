@@ -15,19 +15,18 @@ const routes = [
     children: [
       { path: '',                  component: () => import('@/views/BigScreenView.vue'),         meta: { title: '智能预警监控大屏' } },
       { path: 'dashboard',         component: () => import('@/views/DashboardView.vue'),          meta: { title: '智能监盘' } },
-      { path: 'dashboard',         component: () => import('@/views/DashboardView.vue'),          meta: { title: '智能监盘' } },
       { path: 'global-alert',      component: () => import('@/views/GlobalAlertView.vue'),       meta: { title: '全域告警大屏' } },
       { path: 'alarms',            component: () => import('@/views/AlarmListView.vue'),         meta: { title: '实时报警' } },
       { path: 'alarm-config',      component: () => import('@/views/AlarmConfigView.vue'),       meta: { title: '报警配置' } },
       { path: 'alarm-grade',       component: () => import('@/views/AlarmGradeView.vue'),        meta: { title: '报警分级' } },
       { path: 'diagnosis',         component: () => import('@/views/DiagnosisView.vue'),         meta: { title: '报警诊断' } },
       { path: 'condition',         component: () => import('@/views/ConditionAnalysisView.vue'), meta: { title: '工况分析' } },
+      { path: 'monitoring-warning', component: () => import('@/views/MonitoringWarningView.vue'), meta: { title: '监盘预警' } },
       { path: 'devices',           component: () => import('@/views/DeviceManageView.vue'),      meta: { title: '设备模型' } },
       { path: 'stats',             component: () => import('@/views/StatsView.vue'),             meta: { title: '统计报表' } },
       { path: 'agent',             component: () => import('@/views/AgentView.vue'),             meta: { title: 'AI 运行智能体' } },
       { path: 'trace',             component: () => import('@/views/TraceView.vue'),             meta: { title: '故障溯源' } },
       { path: 'knowledge-graph',   component: () => import('@/views/KnowledgeGraphView.vue'),    meta: { title: '知识图谱' } },
-      { path: 'warn-adjudication', component: () => import('@/views/WarnAdjudicationView.vue'),  meta: { title: '预警研判' } },
       { path: 'model-opt',         component: () => import('@/views/ModelOptView.vue'),          meta: { title: '模型优化' } }
     ]
   }
@@ -42,7 +41,7 @@ router.beforeEach((to, from, next) => {
   const userStore = useUserStore()
   if (to.path === '/login') {
     if (userStore.isLoggedIn()) {
-      next('/dashboard')
+      next('/')
     } else {
       next()
     }

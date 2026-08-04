@@ -1,0 +1,217 @@
+/* ============================================================
+   火警监控 HUD 设计系统 — 纯原生 CSS（无图片素材）
+   基调：深空黑底 + 暗蓝工业霓虹线框 + 切角几何 + 赛博工业风
+   适配：火警监控系统 / 支持缩放 / 支持透明叠加
+   颜色规范（与火电大屏统一）：
+     主色   #1e4a70 / #2a6090  暗蓝
+     暗发光 rgba(0,160,255,0.3)
+     背景   #050a12
+     线条   #005890
+   告警态使用低饱和暗红 / 橙黄 / 青绿，不抢主体
+   ============================================================ */
+
+:root {
+  --hud-bg:        #050a12;
+  --hud-blue:      #1e4a70;   /* 主色 暗蓝 */
+  --hud-blue-2:    #2a6090;   /* 主色 亮一档 */
+  --hud-line:      #005890;   /* 线条深色 */
+  --hud-glow:      rgba(0,160,255,0.3);   /* 暗发光 */
+  --hud-accent:    rgba(0,170,255,0.35);  /* 克制青蓝点缀 */
+  --alarm-red:     #e07a6b;   /* 一级告警 暗红 */
+  --alarm-orange:  #e0a85c;   /* 二级告警 橙黄 */
+  --alarm-green:   #5bb88a;   /* 正常 青绿 */
+  --text-main:     #cfe3f5;
+  --text-dim:      #7aa0c0;
+}
+
+/* ===== 0. 全局基底（背景网格 + 透明叠加底色） ===== */
+.hud-root {
+  background-color: var(--hud-bg);
+  background-image:
+    linear-gradient(rgba(0,160,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,160,255,0.04) 1px, transparent 1px);
+  background-size: 26px 26px;
+  color: var(--text-main);
+  font-family: "Microsoft YaHei", "PingFang SC", "SF Mono", Consolas, sans-serif;
+}
+
+/* 缩放容器：通过 --hud-scale 变量控制整体缩放（支持任意比例） */
+.hud-scale {
+  transform: scale(var(--hud-scale, 1));
+  transform-origin: top left;
+  width: max-content;
+}
+
+/* ============================================================
+   1. 外层大屏主边框（对应大图外框）
+   适用：整个火警监控页面最外层包裹框
+   ============================================================ */
+.hud-main-border {
+  width: 98%;
+  height: 88vh;
+  margin: 20px auto;
+  position: relative;
+  background: rgba(5, 10, 18, 0.55);     /* 半透明 -> 可叠加在任意底图上 */
+  border: 1px solid rgba(30, 74, 112, 0.7);
+  box-shadow:
+    inset 0 0 18px var(--hud-glow),
+    0 0 14px rgba(0, 160, 255, 0.12);
+  backdrop-filter: blur(2px);            /* 透明叠加时轻微磨砂 */
+}
+/* 四角 L 型切角装饰 */
+.hud-main-border::before,
+.hud-main-border::after,
+.hud-main-border .c-bl,
+.hud-main-border .c-br {
+  content: "";
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  border: 2px solid var(--hud-accent);
+  box-shadow: 0 0 8px var(--hud-glow);
+  pointer-events: none;
+}
+.hud-main-border::before { top: -1px; left: -1px;  border-right: none; border-bottom: none; }
+.hud-main-border::after  { top: -1px; right: -1px; border-left: none;  border-bottom: none; }
+.hud-main-border .c-bl   { bottom: -1px; left: -1px;  border-right: none; border-top: none; }
+.hud-main-border .c-br   { bottom: -1px; right: -1px; border-left: none;  border-top: none; }
+
+/* 内部内容容器（页面实际内容放这里） */
+.hud-inner {
+  position: absolute;
+  inset: 14px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* ============================================================
+   2. 数据卡片容器（矩形面板）
+   适用：火警点位 / 探测器状态 / 报警信息卡片
+   ============================================================ */
+.hud-card {
+  background: rgba(0, 25, 45, 0.45);
+  border: 1px solid rgba(30, 74, 112, 0.8);
+  position: relative;
+  padding: 16px;
+  border-radius: 4px;
+  box-shadow: inset 0 0 12px rgba(0, 160, 255, 0.08);
+}
+/* 卡片右上角斜纹装饰 */
+.hud-card::after {
+  content: "";
+  position: absolute;
+  top: 0; right: 0;
+  width: 22px; height: 22px;
+  border-top: 2px solid var(--hud-accent);
+  border-right: 2px solid var(--hud-accent);
+  background: linear-gradient(-45deg, transparent 62%, rgba(0, 170, 255, 0.18) 62%);
+}
+/* 告警态修饰 */
+.hud-card.alarm {
+  border-color: rgba(224, 122, 107, 0.5);
+  box-shadow: inset 0 0 14px rgba(224, 122, 107, 0.15);
+}
+.hud-card.alarm::after { border-color: var(--alarm-red); background: linear-gradient(-45deg, transparent 62%, rgba(224,122,107,0.22) 62%); }
+.hud-card.warn  {
+  border-color: rgba(224, 168, 92, 0.5);
+  box-shadow: inset 0 0 14px rgba(224, 168, 92, 0.13);
+}
+.hud-card.warn::after { border-color: var(--alarm-orange); background: linear-gradient(-45deg, transparent 62%, rgba(224,168,92,0.22) 62%); }
+
+/* 卡片内排版辅助 */
+.hud-card .kpi-label { font-size: 12px; color: var(--text-dim); letter-spacing: 1px; }
+.hud-card .kpi-val {
+  font-size: 30px; font-weight: 700;
+  font-family: "SF Mono", Consolas, monospace;
+  color: var(--text-main);
+  text-shadow: 0 0 10px var(--hud-glow);
+  margin-top: 6px;
+}
+.hud-card .kpi-unit { font-size: 12px; color: var(--text-dim); margin-left: 4px; }
+.hud-card .kpi-sub  { font-size: 11px; margin-top: 4px; color: var(--text-dim); }
+
+/* ============================================================
+   3. 标题栏 / 顶部导航栏（长条横框）
+   适用：页面标题 / 筛选栏 / 报警状态栏
+   ============================================================ */
+.hud-title-bar {
+  height: 46px;
+  background: rgba(0, 30, 55, 0.45);
+  border: 1px solid rgba(30, 74, 112, 0.8);
+  border-top: 1px solid rgba(0, 170, 255, 0.25);
+  display: flex;
+  align-items: center;
+  padding: 0 22px;
+  position: relative;
+  color: var(--text-main);
+  letter-spacing: 1px;
+}
+.hud-title-bar .ht-sub { color: var(--text-dim); font-size: 12px; margin-left: 8px; letter-spacing: 0; }
+.hud-title-bar .ht-status { margin-left: auto; font-size: 12px; display: flex; align-items: center; gap: 6px; color: var(--text-dim); }
+/* 两端几何切角 */
+.hud-title-bar::before {
+  content: ""; position: absolute; left: 0; top: 0;
+  width: 12px; height: 100%;
+  background: linear-gradient(90deg, var(--hud-accent), transparent);
+  clip-path: polygon(0 0, 100% 25%, 100% 75%, 0 100%);
+}
+.hud-title-bar::after {
+  content: ""; position: absolute; right: 0; top: 0;
+  width: 12px; height: 100%;
+  background: linear-gradient(-90deg, var(--hud-accent), transparent);
+  clip-path: polygon(100% 0, 0 25%, 0 75%, 100% 100%);
+}
+/* 小号标题栏（卡片内分区标题） */
+.hud-title-bar.sm { height: 34px; font-size: 13px; padding: 0 14px; }
+
+/* ============================================================
+   4. 分割线组件（细科技线条）
+   适用：模块之间分割 / 表头分割
+   ============================================================ */
+.hud-divider {
+  height: 1px; width: 100%;
+  background: linear-gradient(90deg, transparent, var(--hud-line), transparent);
+  position: relative; margin: 18px 0;
+}
+/* 两端拐角装饰版本 */
+.hud-divider-corner {
+  height: 1px; width: 100%;
+  background: var(--hud-line);
+  position: relative; margin: 18px 0;
+}
+.hud-divider-corner::before {
+  content: ""; position: absolute; left: 0; top: -7px;
+  width: 16px; height: 16px;
+  border-left: 1px solid var(--hud-accent);
+  border-top: 1px solid var(--hud-accent);
+}
+.hud-divider-corner::after {
+  content: ""; position: absolute; right: 0; top: -7px;
+  width: 16px; height: 16px;
+  border-right: 1px solid var(--hud-accent);
+  border-top: 1px solid var(--hud-accent);
+}
+
+/* ============================================================
+   5. 角落装饰（单独角标，可自由摆放）
+   适用：弹窗 / 图表四角
+   ============================================================ */
+.hud-corner     { width: 32px; height: 32px; border-top: 2px solid var(--hud-accent); border-left: 2px solid var(--hud-accent); }
+.hud-corner-tr  { width: 32px; height: 32px; border-top: 2px solid var(--hud-accent); border-right: 2px solid var(--hud-accent); }
+.hud-corner-bl  { width: 32px; height: 32px; border-bottom: 2px solid var(--hud-accent); border-left: 2px solid var(--hud-accent); }
+.hud-corner-br  { width: 32px; height: 32px; border-bottom: 2px solid var(--hud-accent); border-right: 2px solid var(--hud-accent); }
+
+/* ============================================================
+   状态点 / 状态标签（火警语义）
+   ============================================================ */
+.hud-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.hud-dot.ok    { background: var(--alarm-green);  box-shadow: 0 0 6px rgba(91,184,138,0.5); }
+.hud-dot.warn  { background: var(--alarm-orange); box-shadow: 0 0 6px rgba(224,168,92,0.5); }
+.hud-dot.alarm { background: var(--alarm-red);    box-shadow: 0 0 6px rgba(224,122,107,0.6); animation: hudBlink 1s infinite; }
+@keyframes hudBlink { 50% { opacity: 0.3; } }
+
+.hud-tag { font-size: 11px; padding: 2px 8px; border-radius: 2px; border: 1px solid; display: inline-block; }
+.hud-tag.ok    { color: var(--alarm-green);  border-color: rgba(91,184,138,0.4);  background: rgba(91,184,138,0.08); }
+.hud-tag.warn  { color: var(--alarm-orange); border-color: rgba(224,168,92,0.4);  background: rgba(224,168,92,0.08); }
+.hud-tag.alarm { color: var(--alarm-red);    border-color: rgba(224,122,107,0.45); background: rgba(224,122,107,0.1); }

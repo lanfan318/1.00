@@ -677,7 +677,7 @@ onUnmounted(() => {
 .stats-wrap { display:flex; flex-direction:column; gap:6px; height:100%; overflow:hidden; }
 
 /* 时间切换 — 紧凑 */
-.period-header { flex-shrink:0; background:linear-gradient(180deg, rgba(8,20,40,0.45), rgba(6,16,32,0.5)); border:1px solid rgba(62,170,255,0.1); clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px)); padding:2px 12px; }
+.period-header { flex-shrink:0; background:linear-gradient(180deg, rgba(4,10,20,0.315), rgba(3,8,16,0.35)); border:1px solid rgba(62,170,255,0.1); clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px)); padding:2px 12px; }
 .period-tabs { --el-bg-color: transparent; }
 :deep(.period-tabs .el-tabs__nav-wrap::after) { background-color: transparent; }
 :deep(.period-tabs .el-tabs__item) { color:#8fb0cf; font-size:12px; padding:0 12px; height:28px; line-height:28px; }
@@ -685,7 +685,7 @@ onUnmounted(() => {
 :deep(.period-tabs .el-tabs__active-bar) { background:#3eaaff; box-shadow:0 0 6px rgba(62,170,255,0.4); }
 
 /* 控制条 — 单行紧凑 */
-.st-ctrls { flex-shrink:0; display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:5px 10px; background:linear-gradient(180deg, rgba(8,20,40,0.45), rgba(6,16,30,0.5)); border:1px solid rgba(62,170,255,0.1); clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px)); }
+.st-ctrls { flex-shrink:0; display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:5px 10px; background:linear-gradient(180deg, rgba(4,10,20,0.315), rgba(3,8,15,0.35)); border:1px solid rgba(62,170,255,0.1); clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px)); }
 .st-ctrl { display:flex; align-items:center; gap:4px; }
 .st-ctrl label { font-size:10px; color:#9fb6cf; white-space:nowrap; }
 .st-ai-btn { background:linear-gradient(135deg, #3eaaff, #22d3ee); border:none; height:24px; font-size:11px; }
@@ -695,7 +695,7 @@ onUnmounted(() => {
 .sc {
   display:flex; align-items:center; gap:5px;
   padding: 4px 10px;
-  background:linear-gradient(180deg, rgba(8,20,40,0.55), rgba(6,16,30,0.6));
+  background:linear-gradient(180deg, rgba(4,10,20,0.385), rgba(3,8,15,0.42));
   border:1px solid rgba(62,170,255,0.1);
   clip-path: polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 5px 100%, 0 calc(100% - 5px));
   transition:all 0.2s;
@@ -723,7 +723,7 @@ onUnmounted(() => {
   flex-direction: column;
   gap: 2px;
   padding: 6px 10px;
-  background: linear-gradient(180deg, rgba(8,20,40,0.55), rgba(6,16,32,0.6));
+  background: linear-gradient(180deg, rgba(4,10,20,0.385), rgba(3,8,16,0.42));
   border: 1px solid rgba(62,170,255,0.1);
   clip-path: polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 5px 100%, 0 calc(100% - 5px));
   overflow: hidden;
@@ -797,7 +797,7 @@ onUnmounted(() => {
 .chart-panel {
   flex: 1; min-height: 0;
   display: flex; flex-direction: column;
-  background: linear-gradient(180deg, rgba(8,20,42,0.4), rgba(6,16,30,0.45));
+  background: linear-gradient(180deg, rgba(4,10,21,0.28), rgba(3,8,15,0.315));
   border: 1px solid rgba(62,170,255,0.1);
   clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
   overflow: hidden;
@@ -805,7 +805,7 @@ onUnmounted(() => {
 .chart-panel-tabs {
   flex-shrink: 0; display: flex; gap: 0;
   position: relative;   padding: 1px 8px 0;
-  border-bottom: 1px solid rgba(62,170,255,0.1); background: rgba(6,14,28,0.4);
+  border-bottom: 1px solid rgba(62,170,255,0.1); background: rgba(3,7,14,0.28);
 }
 .cpt-tab {
   position: relative; z-index: 1;
@@ -1002,7 +1002,7 @@ onUnmounted(() => {
     0 0, calc(100% - 9px) 0, 100% 9px,
     100% 100%, 9px 100%, 0 calc(100% - 9px)
   );
-  background: linear-gradient(135deg, rgba(8,20,38,0.92), rgba(4,12,24,0.95));
+  background: linear-gradient(135deg, rgba(4,10,19,0.644), rgba(2,6,12,0.665));
   border: 1px solid rgba(90,166,196,0.2);
   position:relative;
 }
@@ -1044,7 +1044,7 @@ onUnmounted(() => {
   flex-shrink:0;
   max-height:100px;
   overflow:auto;
-  background:linear-gradient(180deg, rgba(10,26,50,0.5), rgba(6,16,32,0.55));
+  background:linear-gradient(180deg, rgba(10,26,50,0.5), rgba(3,8,16,0.385));
   border:1px solid rgba(62,170,255,0.1);
   clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
   padding:14px 16px;
@@ -1064,7 +1064,7 @@ onUnmounted(() => {
 .ins-content { font-size:12px; color:#8fb0cf; line-height:1.65; }
 
 /* 控制条 */
-.st-ctrls { flex-shrink:0; display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; padding:10px 14px; background:linear-gradient(180deg, rgba(8,20,40,0.5), rgba(6,16,30,0.55)); border:1px solid rgba(62,170,255,0.12); border-radius:6px; }
+.st-ctrls { flex-shrink:0; display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; padding:10px 14px; background:linear-gradient(180deg, rgba(4,10,20,0.35), rgba(3,8,15,0.385)); border:1px solid rgba(62,170,255,0.12); border-radius:6px; }
 .st-ctrl { display:flex; flex-direction:column; gap:5px; }
 .st-ctrl label { font-size:11px; color:#9fb6cf; }
 .st-ai-btn { align-self:flex-end; background:linear-gradient(135deg, #3eaaff, #22d3ee); border:none; }

@@ -371,7 +371,7 @@ const goCondition = () => router.push('/condition')
    ════════════════════════════════════════ */
 
 /* 页面根容器 — 一屏显示 */
-.kg-page { height: 100%; display: flex; flex-direction: column; overflow: hidden; background-color: #04060a; }
+.kg-page { height: 100%; display: flex; flex-direction: column; overflow: hidden; background-color: #020305; }
 .kg-page :deep(.el-row) { flex: 1; min-height: 0; }
 .kg-page :deep(.el-col) { height: 100%; }
 
@@ -385,7 +385,7 @@ const goCondition = () => router.push('/condition')
 
 /* 通用面板 — 科技风 */
 .cd {
-  background: linear-gradient(180deg, rgba(10,24,44,0.7), rgba(6,16,30,0.65));
+  background: linear-gradient(180deg, rgba(5,12,22,0.49), rgba(3,8,15,0.455));
   border: 1px solid rgba(62,170,255,0.15);
   border-radius: 8px; padding: 16px;
   position: relative;
@@ -456,7 +456,7 @@ const goCondition = () => router.push('/condition')
 .st-row {
   display: flex; justify-content: space-between; align-items: center;
   padding: 6px 10px; font-size: 11.5px; color: #9fb6cf;
-  background: linear-gradient(180deg, rgba(8,20,40,0.45), rgba(6,14,28,0.4));
+  background: linear-gradient(180deg, rgba(4,10,20,0.315), rgba(3,7,14,0.28));
   border-radius: 4px; margin-bottom: 4px;
   border-left: 2.5px solid transparent;
   transition: all 0.2s;
@@ -484,7 +484,7 @@ const goCondition = () => router.push('/condition')
 }
 .kg-toolbar :deep(.el-button-group .el-button) {
   font-size: 11px !important;
-  background: rgba(8,20,40,0.55) !important;
+  background: rgba(4,10,20,0.385) !important;
   border-color: rgba(62,170,255,0.18) !important;
   color: #a0bed8 !important;
   transition: all 0.2s;
@@ -506,7 +506,7 @@ const goCondition = () => router.push('/condition')
 
 /* 详情卡片 */
 .dt-card {
-  background: linear-gradient(180deg, rgba(8,22,42,0.6), rgba(6,16,32,0.55));
+  background: linear-gradient(180deg, rgba(4,11,21,0.42), rgba(3,8,16,0.385));
   padding: 12px 14px; border-radius: 6px;
   border: 1px solid rgba(62,170,255,0.1);
   transition: all 0.2s; position: relative; overflow: hidden;
@@ -522,7 +522,7 @@ const goCondition = () => router.push('/condition')
 
 /* 关系列表 */
 .dt-rels {
-  background: linear-gradient(180deg, rgba(8,20,40,0.5), rgba(6,14,28,0.45));
+  background: linear-gradient(180deg, rgba(4,10,20,0.35), rgba(3,7,14,0.315));
   border-radius: 6px; padding: 10px 12px;
   max-height: 200px; overflow-y: auto;
   border: 1px solid rgba(62,170,255,0.08);
@@ -547,7 +547,7 @@ const goCondition = () => router.push('/condition')
 .empty-hint {
   text-align: center; padding: 48px 20px;
   color: #6a8caa; font-size: 13px;
-  background: linear-gradient(180deg, rgba(8,20,40,0.3), transparent);
+  background: linear-gradient(180deg, rgba(4,10,20,0.21), transparent);
   border-radius: 6px;
   border: 1px dashed rgba(62,170,255,0.12);
 }
@@ -609,7 +609,7 @@ const goCondition = () => router.push('/condition')
 .kg-guide-sub { font-size: 11px; color: #6a8caa; font-weight: 400; letter-spacing: 0.5px; }
 .kg-guide-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 10px; }
 .gcol {
-  background: linear-gradient(180deg, rgba(8,22,42,0.55), rgba(6,16,32,0.5));
+  background: linear-gradient(180deg, rgba(4,11,21,0.385), rgba(3,8,16,0.35));
   border: 1px solid rgba(62,170,255,0.12); border-radius: 6px; padding: 10px 12px;
   min-height: 96px;
 }

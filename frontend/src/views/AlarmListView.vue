@@ -236,7 +236,7 @@ const adviceLines = (r) => {
   position:relative;
   display:flex; flex-direction:column; gap:6px;
   padding:14px 16px;
-  background:linear-gradient(180deg, rgba(8,20,40,0.55), rgba(6,16,32,0.6));
+  background:linear-gradient(180deg, rgba(4,10,20,0.385), rgba(3,8,16,0.42));
   border:1px solid rgba(62,170,255,0.12);
   border-radius:5px;
   cursor:pointer;
@@ -248,9 +248,9 @@ const adviceLines = (r) => {
   opacity:0.7; transition:opacity 0.25s;
 }
 .als-card.ac::before { background:var(--card-ac, #3eaaff); }
-.als-card.ac-danger { --card-ac:#f87171; border-color:rgba(248,113,113,0.25); background:linear-gradient(180deg, rgba(248,80,80,0.06), rgba(6,16,32,0.6)); }
-.als-card.ac-warn { --card-ac:#fbbf24; border-color:rgba(251,191,36,0.25); background:linear-gradient(180deg, rgba(251,180,36,0.05), rgba(6,16,32,0.6)); }
-.als-card.ac-info { --card-ac:#22d3ee; border-color:rgba(34,211,238,0.25); background:linear-gradient(180deg, rgba(34,200,238,0.04), rgba(6,16,32,0.6)); }
+.als-card.ac-danger { --card-ac:#f87171; border-color:rgba(248,113,113,0.25); background:linear-gradient(180deg, rgba(248,80,80,0.06), rgba(3,8,16,0.42)); }
+.als-card.ac-warn { --card-ac:#fbbf24; border-color:rgba(251,191,36,0.25); background:linear-gradient(180deg, rgba(251,180,36,0.05), rgba(3,8,16,0.42)); }
+.als-card.ac-info { --card-ac:#22d3ee; border-color:rgba(34,211,238,0.25); background:linear-gradient(180deg, rgba(34,200,238,0.04), rgba(3,8,16,0.42)); }
 .als-card:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,10,30,0.4); }
 .als-card:not(.ac):hover { border-color:rgba(62,170,255,0.3); }
 .als-card:not(.ac)::before { background:#3eaaff; }
@@ -294,7 +294,7 @@ const adviceLines = (r) => {
   background: #2b6cb0;
 }
 :deep(.alv-tb .el-table td.el-table__cell) {
-  background: linear-gradient(90deg, rgba(14,28,50,0.55), rgba(10,22,42,0.45)) !important;
+  background: linear-gradient(90deg, rgba(7,14,25,0.385), rgba(5,11,21,0.315)) !important;
   border-bottom: 1px solid rgba(62,170,255,0.08) !important;
   color: #dce8f2;
   font-size: 13px;
@@ -378,7 +378,7 @@ const adviceLines = (r) => {
   flex-shrink:0;
   max-height:200px;
   overflow:auto;
-  background:linear-gradient(180deg, rgba(10,26,50,0.55), rgba(6,16,32,0.6));
+  background:linear-gradient(180deg, rgba(10,26,50,0.55), rgba(3,8,16,0.42));
   border:1px solid rgba(62,170,255,0.12);
   border-radius:6px;
   padding:16px;
@@ -399,7 +399,7 @@ const adviceLines = (r) => {
 
 .guide-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 .gs {
-  background:linear-gradient(180deg, rgba(8,18,32,0.7), rgba(6,14,26,0.75));
+  background:linear-gradient(180deg, rgba(4,9,16,0.49), rgba(3,7,13,0.525));
   border:1px solid rgba(62,170,255,0.08);
   border-radius:5px;
   padding:14px;
@@ -436,7 +436,7 @@ const adviceLines = (r) => {
   display:flex; gap:8px; align-items:flex-start;
   font-size:12px; color:#a8c4dc; line-height:1.6;
   padding:6px 10px;
-  background:rgba(8,20,40,0.4);
+  background:rgba(4,10,20,0.28);
   border-radius:4px;
   border-left:2px solid rgba(62,170,255,0.2);
 }

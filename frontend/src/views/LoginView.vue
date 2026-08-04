@@ -90,7 +90,7 @@ const handleLogin = async () => {
   try {
     await userStore.login(form.username, form.password)
     ElMessage.success('登录成功')
-    router.push('/dashboard')
+    router.push('/')
   } catch (e) {
     ElMessage.error(e.message || '登录失败')
   } finally {
@@ -157,7 +157,7 @@ const handleLogin = async () => {
 .lg-form-area { display: flex; align-items: center; justify-content: center; padding: 40px; }
 .login-card {
   width: 380px; position: relative; z-index: 2;
-  background: linear-gradient(180deg, rgba(12,26,46,0.82), rgba(8,18,34,0.88));
+  background: linear-gradient(180deg, rgba(6,13,23,0.574), rgba(4,9,17,0.616));
   border: 1px solid rgba(62,170,255,0.22); border-radius: 8px;
   padding: 40px 36px 30px;
   box-shadow: 0 12px 48px rgba(0,0,0,0.45), inset 0 1px 0 rgba(62,170,255,0.08);

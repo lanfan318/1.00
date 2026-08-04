@@ -325,7 +325,7 @@ watch(() => form.value.unit, () => {
    ════════════════════════════════════════ */
 
 /* 页面根容器 — 一屏显示 */
-.ac-page { display:flex; flex-direction:column; height:100%; overflow:hidden; background-color: #04060a; }
+.ac-page { display:flex; flex-direction:column; height:100%; overflow:hidden; background-color: #020305; }
 
 /* 页面背景纹理 */
 .pg-h { flex-shrink:0; display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; position: relative; }
@@ -337,7 +337,7 @@ h2 { font-size: 18px; font-weight: 700; color: #e0f0ff; letter-spacing: 1px; tex
 
 /* ═══ 左侧规则列表 — 科技风卡片 ═══ */
 .ac-left {
-  background: linear-gradient(180deg, rgba(10,22,42,0.8), rgba(6,14,28,0.75));
+  background: linear-gradient(180deg, rgba(5,11,21,0.56), rgba(3,7,14,0.525));
   border: 1px solid rgba(62,170,255,0.18);
   border-radius: 8px;
   padding: 14px; display: flex; flex-direction: column;
@@ -378,7 +378,7 @@ h2 { font-size: 18px; font-weight: 700; color: #e0f0ff; letter-spacing: 1px; tex
 .ac-list-i {
   padding: 11px 12px; border-radius: 6px; cursor: pointer;
   margin-bottom: 7px; border: 1px solid transparent;
-  background: linear-gradient(180deg, rgba(10,24,42,0.6), rgba(6,16,30,0.55));
+  background: linear-gradient(180deg, rgba(5,12,21,0.42), rgba(3,8,15,0.385));
   transition: all 0.25s; position: relative; overflow: hidden;
 }
 .ac-list-i::before {
@@ -387,7 +387,7 @@ h2 { font-size: 18px; font-weight: 700; color: #e0f0ff; letter-spacing: 1px; tex
 }
 .ac-list-i:hover {
   border-color: rgba(62,170,255,0.2);
-  background: linear-gradient(180deg, rgba(14,30,52,0.65), rgba(8,20,38,0.6));
+  background: linear-gradient(180deg, rgba(7,15,26,0.455), rgba(4,10,19,0.42));
   transform: translateX(2px);
 }
 .ac-list-i:hover::before { background: rgba(62,170,255,0.4); }
@@ -406,7 +406,7 @@ h2 { font-size: 18px; font-weight: 700; color: #e0f0ff; letter-spacing: 1px; tex
 
 /* ═══ 右侧配置区 — 科技风主体 ═══ */
 .ac-right {
-  background: linear-gradient(180deg, rgba(10,26,50,0.7), rgba(6,16,32,0.65));
+  background: linear-gradient(180deg, rgba(10,26,50,0.7), rgba(3,8,16,0.455));
   border: 1px solid rgba(62,170,255,0.2);
   border-radius: 8px; padding: 14px 16px;
   display: flex; flex-direction: column; gap: 14px;
@@ -464,7 +464,7 @@ h2 { font-size: 18px; font-weight: 700; color: #e0f0ff; letter-spacing: 1px; tex
 
 /* ═══ 分组区块 — 科技风 ═══ */
 .ac-section {
-  background: linear-gradient(180deg, rgba(8,22,42,0.6), rgba(6,16,32,0.5));
+  background: linear-gradient(180deg, rgba(4,11,21,0.42), rgba(3,8,16,0.35));
   border: 1px solid rgba(62,170,255,0.15);
   border-radius: 6px; padding: 12px 14px; transition: all 0.25s;
   position: relative; overflow: hidden;
@@ -556,7 +556,7 @@ h2 { font-size: 18px; font-weight: 700; color: #e0f0ff; letter-spacing: 1px; tex
 
 /* ═══ 通知渠道 — 科技风卡片 ═══ */
 .ac-channels {
-  background: linear-gradient(180deg, rgba(6,16,30,0.8), rgba(4,10,22,0.75));
+  background: linear-gradient(180deg, rgba(3,8,15,0.56), rgba(2,5,11,0.525));
   border: 1px solid rgba(62,170,255,0.15);
   border-radius: 8px; padding: 14px 16px;
   position: relative;
@@ -568,7 +568,7 @@ h2 { font-size: 18px; font-weight: 700; color: #e0f0ff; letter-spacing: 1px; tex
 .ac-ch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
 .ac-ch-card {
   display: flex; gap: 10px; padding: 12px;
-  background: linear-gradient(180deg, rgba(14,24,42,0.8), rgba(8,16,32,0.75));
+  background: linear-gradient(180deg, rgba(7,12,21,0.56), rgba(4,8,16,0.525));
   border: 1px solid rgba(62,170,255,0.12);
   border-radius: 6px; transition: all 0.2s;
   position: relative; overflow: hidden;
@@ -596,7 +596,7 @@ h2 { font-size: 18px; font-weight: 700; color: #e0f0ff; letter-spacing: 1px; tex
 /* Element Plus 深度覆盖 — 工业风 */
 .ac-right :deep(.el-input__wrapper),
 .ac-right :deep(.el-select__wrapper) {
-  background: rgba(6,16,30,0.6) !important;
+  background: rgba(3,8,15,0.42) !important;
   border: 1px solid rgba(62,170,255,0.15) !important;
   box-shadow: none !important;
   transition: all 0.2s;
@@ -613,7 +613,7 @@ h2 { font-size: 18px; font-weight: 700; color: #e0f0ff; letter-spacing: 1px; tex
 .ac-right :deep(.el-input__inner) { color: #e2e8f0 !important; }
 .ac-right :deep(.el-input__inner::placeholder) { color: #5a7894 !important; }
 .ac-right :deep(.el-textarea__inner) {
-  background: rgba(6,16,30,0.6) !important;
+  background: rgba(3,8,15,0.42) !important;
   color: #e2e8f0 !important;
   border: 1px solid rgba(62,170,255,0.15) !important;
   box-shadow: none !important;
@@ -628,7 +628,7 @@ h2 { font-size: 18px; font-weight: 700; color: #e0f0ff; letter-spacing: 1px; tex
   transform: translateY(-1px);
 }
 .ac-right :deep(.el-radio-button__inner) {
-  background: rgba(6,16,30,0.6) !important;
+  background: rgba(3,8,15,0.42) !important;
   border-color: rgba(62,170,255,0.2) !important;
   color: #a0bed8 !important;
 }

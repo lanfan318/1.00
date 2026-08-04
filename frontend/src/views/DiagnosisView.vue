@@ -270,7 +270,7 @@ const selNodeId = ref(null)
 </script>
 
 <style scoped>
-.dg-page { display: flex; flex-direction: column; gap: 14px; height: 100%; overflow: hidden; background-color: #04060a; }
+.dg-page { display: flex; flex-direction: column; gap: 14px; height: 100%; overflow: hidden; background-color: #020305; }
 .dg-head { flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
 .dg-head-l { display: flex; align-items: center; gap: 12px; }
 .dg-bar { width: 4px; height: 22px; background: linear-gradient(180deg, #3eaaff, #22d3ee); border-radius: 2px; box-shadow: 0 0 10px rgba(62,170,255,0.5); }
@@ -284,10 +284,10 @@ const selNodeId = ref(null)
 .dg-diag { display: flex; flex-direction: column; overflow-y: auto; min-height: 0; }
 .dg-kg { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
 .dg-kg .cd-t { flex-shrink: 0; }
-.kg-chart { flex: 1; min-height: 0; background: linear-gradient(180deg, rgba(6,18,36,0.4), rgba(8,22,42,0.25)); border-radius: 6px; }
+.kg-chart { flex: 1; min-height: 0; background: linear-gradient(180deg, rgba(3,9,18,0.28), rgba(4,11,21,0.175)); border-radius: 6px; }
 
 /* 诊断对象 */
-.dg-obj { background: linear-gradient(135deg, rgba(10,24,42,0.6), rgba(6,16,30,0.55)); border: 1px solid rgba(62,170,255,0.15); border-radius: 6px; padding: 14px 16px; margin-bottom: 14px; box-shadow: 0 2px 12px rgba(0,10,30,0.2); }
+.dg-obj { background: linear-gradient(135deg, rgba(5,12,21,0.42), rgba(3,8,15,0.385)); border: 1px solid rgba(62,170,255,0.15); border-radius: 6px; padding: 14px 16px; margin-bottom: 14px; box-shadow: 0 2px 12px rgba(0,5,15,0.14); }
 .dg-obj-l { font-size: 12px; color: #9fb6cf; margin-bottom: 6px; font-weight: 500; }
 .dg-obj-v { font-size: 16px; font-weight: 600; color: #e2e8f0; }
 .dg-fault { color: #fbbf24; }
@@ -298,10 +298,10 @@ const selNodeId = ref(null)
 .dg-dot.ok { background: #3eaaff; box-shadow: 0 0 8px #3eaaff; }
 .dg-dot.warn { background: #fbbf24; box-shadow: 0 0 8px #fbbf24; }
 .dg-dot.suc { background: #34d399; box-shadow: 0 0 8px #34d399; }
-.dg-ans { font-size: 13px; color: #cbd5e1; line-height: 2; background: linear-gradient(180deg, rgba(6,18,36,0.7), rgba(8,22,42,0.5)); border-left: 3px solid rgba(62,170,255,0.4); padding: 12px 14px; border-radius: 0 6px 6px 0; box-shadow: inset 0 0 20px rgba(62,170,255,0.03); }
+.dg-ans { font-size: 13px; color: #cbd5e1; line-height: 2; background: linear-gradient(180deg, rgba(3,9,18,0.49), rgba(4,11,21,0.35)); border-left: 3px solid rgba(62,170,255,0.4); padding: 12px 14px; border-radius: 0 6px 6px 0; box-shadow: inset 0 0 20px rgba(62,170,255,0.03); }
 
 .dg-causes { display: flex; flex-direction: column; gap: 10px; }
-.dg-cause { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #cbd5e1; background: linear-gradient(180deg, rgba(6,18,36,0.7), rgba(8,22,42,0.5)); padding: 10px 12px; border-radius: 6px; border: 1px solid rgba(62,170,255,0.1); transition: all 0.2s; }
+.dg-cause { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #cbd5e1; background: linear-gradient(180deg, rgba(3,9,18,0.49), rgba(4,11,21,0.35)); padding: 10px 12px; border-radius: 6px; border: 1px solid rgba(62,170,255,0.1); transition: all 0.2s; }
 .dg-cause:hover { border-color: rgba(62,170,255,0.25); transform: translateX(2px); }
 .dg-cause-conf { font-family: "SF Mono","Consolas",monospace; color: #fbbf24; font-weight: 600; }
 .dg-cause-txt { color: #cbd5e1; }
@@ -315,7 +315,7 @@ const selNodeId = ref(null)
 /* 引用溯源 */
 .dg-ref { flex-shrink: 0; max-height: 200px; overflow: auto; margin-top: 0; }
 .ref-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
-.ref { background: linear-gradient(180deg, rgba(10,24,42,0.6), rgba(6,16,32,0.55)); padding: 14px 16px; border-radius: 6px; border: 1px solid rgba(62,170,255,0.14); transition: all 0.25s; }
+.ref { background: linear-gradient(180deg, rgba(5,12,21,0.42), rgba(3,8,16,0.385)); padding: 14px 16px; border-radius: 6px; border: 1px solid rgba(62,170,255,0.14); transition: all 0.25s; }
 .ref:hover { border-color: rgba(62,170,255,0.35); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,10,30,0.3); }
 .ref-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
 .ref-date { font-size: 11px; color: #8fb0cf; font-family: "SF Mono","Consolas",monospace; }
@@ -348,5 +348,13 @@ const selNodeId = ref(null)
 .dg-page .dg-ref > .cd-t {
   background-color: #06121c !important;
   background-image: none !important;
+}
+/* 诊断页头部：去掉 AppLayout 叠加的 shell-title-rail 贴图（与外壳框架重复） */
+.dg-page > .dg-head,
+.dg-page .dg-head {
+  background-image: none !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 </style>

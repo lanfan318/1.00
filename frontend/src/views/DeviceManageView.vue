@@ -388,7 +388,7 @@ if (!store.selectedDevice && store.devices.length) store.selectedDevice = store.
 .dm-info { flex-shrink: 0; }
 .dm-info-ops { margin-left: auto; display: flex; gap: 6px; }
 .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.info-i { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.5); border: 1px solid rgba(90,166,196,0.1); border-radius: 5px; padding: 9px 12px; transition: all 0.2s; }
+.info-i { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.35); border: 1px solid rgba(90,166,196,0.1); border-radius: 5px; padding: 9px 12px; transition: all 0.2s; }
 .info-i:hover { border-color: rgba(62,170,255,0.2); }
 .info-k { font-size: 11.5px; color: #8fb0cf; }
 .info-v { font-size: 14px; color: #e2e8f0; font-weight: 600; }
@@ -407,7 +407,7 @@ if (!store.selectedDevice && store.devices.length) store.selectedDevice = store.
 
 .meas-tb { width: 100%; border-collapse: collapse; font-size: 12px; }
 .meas-tb th {
-  background: rgba(0,0,0,0.6);
+  background: rgba(0,0,0,0.42);
   color: #a8c8e4;
   font-weight: 600;
   font-size: 11.5px;
@@ -452,7 +452,7 @@ if (!store.selectedDevice && store.devices.length) store.selectedDevice = store.
   padding: 3px 6px;
   border: 1px solid rgba(62,170,255,0.25);
   border-radius: 4px;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0,0,0,0.42);
   color: #e2e8f0;
   font-size: 12px;
   font-family: "SF Mono","Consolas",monospace;
@@ -505,7 +505,7 @@ if (!store.selectedDevice && store.devices.length) store.selectedDevice = store.
 
 .empty { padding: 28px; text-align: center; color: #7a98b4; font-size: 12.5px; }
 
-.in { background: rgba(0,0,0,0.5); border: 1px solid rgba(90,166,196,0.15); border-left: 3px solid #34d399; border-radius: 5px; padding: 12px; margin-top: 10px; }
+.in { background: rgba(0,0,0,0.35); border: 1px solid rgba(90,166,196,0.15); border-left: 3px solid #34d399; border-radius: 5px; padding: 12px; margin-top: 10px; }
 .in-t { font-size: 12.5px; font-weight: 600; color: #34d399; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
 .in-ic { width: 17px; height: 17px; border-radius: 50%; background: rgba(52,211,153,0.15); border: 1px solid rgba(52,211,153,0.4); display: flex; align-items: center; justify-content: center; font-size: 10.5px; }
 .in-b { font-size: 11.5px; color: #cbd5e1; line-height: 1.7; }
@@ -524,7 +524,7 @@ if (!store.selectedDevice && store.devices.length) store.selectedDevice = store.
 .dm-alarm-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; padding-top: 6px; }
 .dm-alarm-list::-webkit-scrollbar { width: 2.5px; }
 .dm-alarm-list::-webkit-scrollbar-thumb { background: rgba(62,170,255,0.2); border-radius: 2px; }
-.dm-alarm-i { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 4px; background: rgba(0,0,0,0.4); border: 1px solid rgba(90,166,196,0.08); transition: 0.15s; }
+.dm-alarm-i { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 4px; background: rgba(0,0,0,0.28); border: 1px solid rgba(90,166,196,0.08); transition: 0.15s; }
 .dm-alarm-i:hover { border-color: rgba(62,170,255,0.22); transform: translateX(2px); }
 .dm-alarm-lv { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 3px; flex-shrink: 0; }
 .dm-alarm-i.lv1 .dm-alarm-lv { background: rgba(239,68,68,0.2); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
@@ -548,12 +548,12 @@ if (!store.selectedDevice && store.devices.length) store.selectedDevice = store.
 }
 /* 标题栏不透明深蓝底，盖住下方网格（外观与原来一致，不改色） */
 .dm-page .dm-right .cd:not(.dm-tree) .cd-t {
-  background-color: #0a1e2c;
+  background-color: #050f16;
 }
 
 /* ═══ 通用面板样式 .cd — 科技风统一 ═══ */
 .cd {
-  background: linear-gradient(180deg, rgba(10,24,44,0.65), rgba(6,16,30,0.6));
+  background: linear-gradient(180deg, rgba(5,12,22,0.455), rgba(3,8,15,0.42));
   border: 1px solid rgba(62,170,255,0.13);
   border-radius: 6px;
   position: relative;
